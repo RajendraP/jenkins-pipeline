@@ -1,3 +1,3 @@
-def call(String[] var) {
+def call(String var) {
     echo "Running $var step.."
 }
