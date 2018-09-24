@@ -1,4 +1,4 @@
-@Library('Library@master') _
+@Library('test@master') _
 
 node {  
     stage('Build') { 
