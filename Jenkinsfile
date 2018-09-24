@@ -1,14 +1,16 @@
+@Library('Library@master')
+
 node {  
     stage('Build') { 
-        echo "Running Build Step"
+        echoVar 'Build'
         // 
     }
     stage('Test') { 
-        echo "Running Test Step"
+        echoVar 'Test'
         // 
     }
     stage('Deploy') { 
-        echo "Running Deploy Step.."
+        echoVar 'Deploy'
         // 
     }
 }
