@@ -15,10 +15,14 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                     response = jiraNewIssue issue: jiraIssue
                     echo response.successful.toString()
                     echo response.data.toString()
+                    println issue.summary
+                    println issue.details
+                    println jiraComponent
+                    println jiraprojectName
+                    println issueType
+
             }
 
         }
     }
 }
-
-
