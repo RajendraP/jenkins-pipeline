@@ -1,0 +1,9 @@
+*.log
+*.DS_Store
+*.pyc
+*.html
+*.xml
+__pycache__
+*.pytest_cache
+
+
