@@ -8,7 +8,7 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                     issue ->
                         def jiraIssue =
                                 [fields:
-                                         [project    : [name: jiraprojectName],
+                                         [project    : [id: 16941],
                                           summary    : issue.summary,
                                           description: issue.details,
                                           components : [[name: jiraComponent]],
