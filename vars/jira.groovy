@@ -1,4 +1,5 @@
-def call(String jiraprojectName, String jiraComponent, String resultsfilePath, String issueType='Bug') {
+def call(String jiraprojectName, String jiraComponent, String resultsfilePath,
+         String issueType='Bug', String fixVersions='pipeline_fixes') {
     stage(name: 'Jira') {
         withEnv(['JIRA_SITE=LOCAL']) {
             jira_issues = parseTestResultXML resultsfilePath
@@ -12,6 +13,7 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                           summary    : issue.summary,
                                           description: issue.details,
                                           components : [[name: jiraComponent]],
+                                          fixVersions: [[name: fixVersions]],
                                           issuetype  : [name: issueType]]]
                         response = jiraNewIssue issue: jiraIssue
                         echo response.successful.toString()
@@ -21,6 +23,7 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                         println jiraComponent
                         println jiraprojectName
                         println issueType
+                        println fixVersions
 
                 }
 
