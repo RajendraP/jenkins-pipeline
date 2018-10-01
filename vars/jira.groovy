@@ -8,14 +8,14 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath,
                 jira_issues.each {
                     issue ->
                         // query jira & find if any duplicates, if dup, skip if not continue
-
+                        def bugExists = []
                         bugExists = jiraExists(issue)
                         if (bugExists) {
                             echo 'not going to raise jira as, jira already exists'
                             println bugExists
 //                            echo bugExists
                             jiraBaseUrl =  getJiraBaseUrl()
-                            println (jiraBaseUrl + '/browse' + issues[i].key)
+                            println (jiraBaseUrl + '/browse' + bugExists[0])
 
                         } else {
 //                            def jiraIssue =
