@@ -23,7 +23,6 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath,
 
                         } else {
                             jiraBaseUrl =  getJiraBaseUrl()
-
                             echo 'going to raise a jira'
                             def jiraIssue =
                                     [fields:
@@ -63,7 +62,7 @@ def jiraExists(issue){
     details = ((description.split('\\n')[-1]))
     details = (description.split('\\n')[-1]).replace('/', '\\u002f').split(' ')[0]
 
-    def jql_str = "PROJECT = IPF AND summary~${summary} AND description~${details} AND status != Closed"
+    def jql_str = "PROJECT = IPF AND summary~${summary} AND description~${details} AND status != Done"
     echo jql_str
 
     node {
@@ -88,7 +87,7 @@ def getJiraBaseUrl(){
     node {
             withEnv(['JIRA_SITE=LOCAL']) {
                 def serverInfo = jiraGetServerInfo()
-                echo serverInfo.data.baseUrl
+//                echo serverInfo.data.baseUrl
                 return serverInfo.data.baseUrl
             }
     }
