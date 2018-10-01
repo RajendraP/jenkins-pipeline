@@ -65,7 +65,7 @@ def jiraExists(issue){
                 def issues = searchResults.data.issues
                 for (i = 0; i <issues.size(); i++) {
                     echo issues[i].key
-                    jiraKeys<< issue[i].key
+                    jiraKeys<< issues[i].key
                 }
                 return jiraKeys
             }
