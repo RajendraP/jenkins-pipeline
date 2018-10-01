@@ -22,6 +22,8 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath,
 
 
                         } else {
+                            jiraBaseUrl =  getJiraBaseUrl()
+
                             echo 'going to raise a jira'
                             def jiraIssue =
                                     [fields:
@@ -33,6 +35,8 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath,
                                               issuetype  : [name: issueType]]]
                             response = jiraNewIssue issue: jiraIssue
                             echo response.successful.toString()
+//                            println (jiraBaseUrl + '/browse/' + jira)
+
 
 //                            echo response.data.toString()
 //                            println issue.summary
