@@ -49,7 +49,7 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath,
 def jiraExists(issue){
     summary = issue.summary
     description = issue.details
-    record = description.split('\\n')[-1] // getting last line of stack trace with lineno.
+    record = (description.split('\\n')[-1]).split('/')[-1] // getting last line of stack trace with lineno.
     echo summary
     echo description
     echo record
