@@ -12,7 +12,7 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath,
                         bugExists = jiraExists(issue)
                         if (bugExists) {
                             echo 'not going to raise jira as, jira already exists'
-                            echo bugExists
+//                            echo bugExists
                         } else {
 //                            def jiraIssue =
 //                                    [fields:
