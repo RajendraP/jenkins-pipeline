@@ -51,10 +51,8 @@ def jiraExists(issue){
     description = issue.details
     details = ((description.split('\\n')[-1]))
     details = (description.split('\\n')[-1]).replace('/', '\\u002f').split(' ')[0]
-    echo summary
-    echo details
 
-    def jql_str = "PROJECT = IPF AND summary~${summary} AND description~${details}"
+    def jql_str = "PROJECT = IPF AND summary~${summary} AND description~${details} AND status != Closed"
     echo jql_str
 
     node {
@@ -68,5 +66,7 @@ def jiraExists(issue){
                 }
                 return jiraKeys
             }
-        }
     }
+}
+
+
