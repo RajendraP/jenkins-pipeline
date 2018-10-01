@@ -63,6 +63,9 @@ def jiraExists(issue){
                 for (i = 0; i <issues.size(); i++) {
                     echo issues[i].key
                     jiraKeys<< issues[i].key
+                    echo issues[i].key
+                    jiraBaseUrl =  getJiraBaseUrl()
+                    println (jiraBaseUrl + '/browse' + issues[i].key)
                 }
                 return jiraKeys
             }
@@ -70,3 +73,12 @@ def jiraExists(issue){
 }
 
 
+def getJiraBaseUrl(){
+    node {
+            withEnv(['JIRA_SITE=LOCAL']) {
+                def serverInfo = jiraGetServerInfo()
+                echo serverInfo.data.baseUrl
+                return serverInfo.data.baseUrl
+            }
+    }
+}
