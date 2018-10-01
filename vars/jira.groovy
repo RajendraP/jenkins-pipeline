@@ -14,8 +14,8 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath,
                             echo 'not going to raise jira as, jira already exists'
                             println bugExists
 //                            echo bugExists
-//                            jiraBaseUrl =  getJiraBaseUrl()
-//                            println (jiraBaseUrl + '/browse' + issues[i].key)
+                            jiraBaseUrl =  getJiraBaseUrl()
+                            println (jiraBaseUrl + '/browse' + issues[i].key)
 
                         } else {
 //                            def jiraIssue =
@@ -65,9 +65,9 @@ def jiraExists(issue){
                 def jiraKeys = []
                 def issues = searchResults.data.issues
                 for (i = 0; i <issues.size(); i++) {
-                    echo issues[i].key
+//                    echo issues[i].key
                     jiraKeys<< issues[i].key
-                    echo issues[i].key
+//                    echo issues[i].key
 //                    jiraBaseUrl =  getJiraBaseUrl()
 //                    println (jiraBaseUrl + '/browse' + issues[i].key)
                 }
