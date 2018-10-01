@@ -46,6 +46,29 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath,
 }
 
 
+def parseTestResultXML(String testresultsfilePath){
+    def jira_issues = []
+    try {
+        def xml = new XmlParser().parse(testresultsfilePath)
+        xml.testcase.each{
+            test ->
+                def failedTests = [:]
+                if (test.failure){
+                    failedTests.put('summary', test.@name)
+                    failedTests.put('file', test.@file)
+                    failedTests.put('details', test.failure.text())
+                    failedTests.put('description', test.properties.property.'@value'[0].trim())
+                    jira_issues << failedTests
+                }
+        }
+        jira_issues
+    }
+    catch (FileNotFoundException ex){
+        println("Catching the exception: ${ex.message}")
+    }
+    jira_issues
+}
+
 def jiraExists(issue){
     summary = issue.summary
     description = issue.details
@@ -67,7 +90,6 @@ def jiraExists(issue){
             }
     }
 }
-
 
 def getJiraBaseUrl(){
     node {
