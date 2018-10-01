@@ -22,16 +22,18 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath,
 
 
                         } else {
-//                            def jiraIssue =
-//                                    [fields:
-//                                             [project    : [id: '16941'],
-//                                              summary    : issue.summary,
-//                                              description: issue.details,
-//                                              components : [[name: jiraComponent]],
-//                                              fixVersions: [[name: fixVersions]],
-//                                              issuetype  : [name: issueType]]]
-//                            response = jiraNewIssue issue: jiraIssue
-//                            echo response.successful.toString()
+                            echo 'going to raise a jira'
+                            def jiraIssue =
+                                    [fields:
+                                             [project    : [id: '16941'],
+                                              summary    : issue.summary,
+                                              description: issue.details,
+                                              components : [[name: jiraComponent]],
+                                              fixVersions: [[name: fixVersions]],
+                                              issuetype  : [name: issueType]]]
+                            response = jiraNewIssue issue: jiraIssue
+                            echo response.successful.toString()
+
 //                            echo response.data.toString()
 //                            println issue.summary
 //                            println issue.details
@@ -39,9 +41,6 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath,
 //                            println jiraprojectName
 //                            println issueType
 //                            println fixVersions
-
-                            echo 'going to raise a jira'
-
                         }
                 }
 
