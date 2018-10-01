@@ -15,7 +15,7 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath,
                             println bugExists
 //                            echo bugExists
                             jiraBaseUrl =  getJiraBaseUrl()
-                            println (jiraBaseUrl + '/browse' + bugExists[0])
+                            println (jiraBaseUrl + '/browse/' + bugExists[0])
 
                         } else {
 //                            def jiraIssue =
