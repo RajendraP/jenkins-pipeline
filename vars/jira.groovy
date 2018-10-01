@@ -35,7 +35,7 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath,
                             response = jiraNewIssue issue: jiraIssue
                             echo response.successful.toString()
                             echo response.data.key
-//                            println (jiraBaseUrl + '/browse/' + jira)
+                            println (jiraBaseUrl + '/browse/' + response.data.key)
 
 
 //                            echo response.data.toString()
