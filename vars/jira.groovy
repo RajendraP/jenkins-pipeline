@@ -50,7 +50,7 @@ def jiraExists(issue){
     summary = issue.summary
     description = issue.details
     details = ((description.split('\\n')[-1]))
-    details = (record.replace('/', '\\u002f')).split(' ')[0]
+    details = (description.split('\\n')[-1]).replace('/', '\\u002f').split(' ')[0]
     echo summary
     echo details
 
