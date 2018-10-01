@@ -12,15 +12,11 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath,
                         bugExists = jiraExists(issue)
                         if (bugExists) {
                             echo 'Jira ticket already exists'
-//                            jiraBaseUrl =  getJiraBaseUrl()
                             bugExists.each{
                                 jira ->
                                 println (jiraBaseUrl + '/browse/' + jira)
                             }
-
-
                         } else {
-//                            jiraBaseUrl =  getJiraBaseUrl()
                             echo 'Going to raise a Jira ticket'
                             def jiraIssue =
                                     [fields:
@@ -31,9 +27,8 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath,
                                               fixVersions: [[name: fixVersions]],
                                               issuetype  : [name: issueType]]]
                             response = jiraNewIssue issue: jiraIssue
-//                            echo response.successful.toString()
-//                            echo response.data.key
                             println (jiraBaseUrl + '/browse/' + response.data.key)
+                            uploadLogFile response.data.key
                         }
                 }
 
@@ -97,5 +92,16 @@ def getJiraBaseUrl(){
                 def serverInfo = jiraGetServerInfo()
                 return serverInfo.data.baseUrl
             }
+    }
+}
+
+
+def uploadLogFile(jiraKey){
+    node {
+        withEnv(['JIRA_SITE=LOCAL']) {
+            println "${workspace}"
+            def attachment = jiraUploadAttachment idOrKey: jiraKey, file: "${workspace}/hello_python.log"
+            echo attachment.data.toString()
+        }
     }
 }
