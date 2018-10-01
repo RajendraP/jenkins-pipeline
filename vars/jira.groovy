@@ -47,27 +47,17 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath,
 
 
 def jiraExists(issue){
-
-//    def inStr = 'src/test/test_helloworld.py:15: AssertionError'
-//    def outStr = inStr.replaceAll( /([^a-zA-Z0-9])/, '\\\\$1' )
-//    println "Output: $outStr"
-
-
     summary = issue.summary
     description = issue.details
-//    record = ((description.split('\\n')[-1]).split('/')[-1]).split(':')[0] // getting last line of stack trace with lineno.
     details = ((description.split('\\n')[-1]))
     details = (record.replace('/', '\\u002f')).split(' ')[0]
-//    record = record.replaceAll( /([^a-zA-Z0-9])/, '\\\\$1' )
     echo summary
     echo details
-    echo record
 
     def jql_str = "PROJECT = IPF AND summary~${summary} AND description~${details}"
     echo jql_str
 
     node {
-//        stage('JIRALoookup') {
             withEnv(['JIRA_SITE=LOCAL']) {
                 def searchResults = jiraJqlSearch jql: jql_str
                 def jiraKeys = []
@@ -80,4 +70,3 @@ def jiraExists(issue){
             }
         }
     }
-//}
