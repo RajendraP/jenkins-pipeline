@@ -56,14 +56,14 @@ def jiraExists(issue){
     summary = issue.summary
     description = issue.details
 //    record = ((description.split('\\n')[-1]).split('/')[-1]).split(':')[0] // getting last line of stack trace with lineno.
-    record = ((description.split('\\n')[-1]))
-    record = (record.replace('/', '\\u002f')).split(' ')[0]
+    details = ((description.split('\\n')[-1]))
+    details = (record.replace('/', '\\u002f')).split(' ')[0]
 //    record = record.replaceAll( /([^a-zA-Z0-9])/, '\\\\$1' )
     echo summary
-    echo description
+    echo details
     echo record
 
-    def jql_str = "PROJECT = IPF AND summary~${summary} AND description~${record}"
+    def jql_str = "PROJECT = IPF AND summary~${summary} AND description~${details}"
     echo jql_str
 
     node {
