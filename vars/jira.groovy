@@ -12,10 +12,14 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath,
                         bugExists = jiraExists(issue)
                         if (bugExists) {
                             echo 'not going to raise jira as, jira already exists'
-                            println bugExists
+//                            println bugExists
 //                            echo bugExists
                             jiraBaseUrl =  getJiraBaseUrl()
-                            println (jiraBaseUrl + '/browse/' + bugExists[0])
+                            bugExists.each{
+                                jira ->
+                                println (jiraBaseUrl + '/browse/' + jira)
+                            }
+
 
                         } else {
 //                            def jiraIssue =
