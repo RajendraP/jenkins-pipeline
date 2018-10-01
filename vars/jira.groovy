@@ -58,7 +58,7 @@ def jiraExists(issue){
     echo jql_str
 
     node {
-        stage('JIRALoookup') {
+//        stage('JIRALoookup') {
             withEnv(['JIRA_SITE=LOCAL']) {
                 def searchResults = jiraJqlSearch jql: jql_str
                 def jiraKeys = []
@@ -71,4 +71,4 @@ def jiraExists(issue){
             }
         }
     }
-}
+//}
