@@ -12,7 +12,11 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath,
                         bugExists = jiraExists(issue)
                         if (bugExists) {
                             echo 'not going to raise jira as, jira already exists'
+                            println bugExists
 //                            echo bugExists
+//                            jiraBaseUrl =  getJiraBaseUrl()
+//                            println (jiraBaseUrl + '/browse' + issues[i].key)
+
                         } else {
 //                            def jiraIssue =
 //                                    [fields:
@@ -64,8 +68,8 @@ def jiraExists(issue){
                     echo issues[i].key
                     jiraKeys<< issues[i].key
                     echo issues[i].key
-                    jiraBaseUrl =  getJiraBaseUrl()
-                    println (jiraBaseUrl + '/browse' + issues[i].key)
+//                    jiraBaseUrl =  getJiraBaseUrl()
+//                    println (jiraBaseUrl + '/browse' + issues[i].key)
                 }
                 return jiraKeys
             }
