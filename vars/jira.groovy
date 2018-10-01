@@ -2,19 +2,17 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath,
          String issueType='Bug', String fixVersions='pipeline_fixes') {
     stage(name: 'Jira') {
         withEnv(['JIRA_SITE=LOCAL']) {
-            jira_issues = parseTestResultXML resultsfilePath
-            if (jira_issues) {
-
-                jira_issues.each {
+            failures = parseTestResultXML resultsfilePath
+            if (failures) {
+                jiraBaseUrl =  getJiraBaseUrl()
+                failures.each {
                     issue ->
                         // query jira & find if any duplicates, if dup, skip if not continue
                         def bugExists = []
                         bugExists = jiraExists(issue)
                         if (bugExists) {
-                            echo 'not going to raise jira as, jira already exists'
-//                            println bugExists
-//                            echo bugExists
-                            jiraBaseUrl =  getJiraBaseUrl()
+                            echo 'Jira ticket already exists'
+//                            jiraBaseUrl =  getJiraBaseUrl()
                             bugExists.each{
                                 jira ->
                                 println (jiraBaseUrl + '/browse/' + jira)
@@ -22,8 +20,8 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath,
 
 
                         } else {
-                            jiraBaseUrl =  getJiraBaseUrl()
-                            echo 'going to raise a jira'
+//                            jiraBaseUrl =  getJiraBaseUrl()
+                            echo 'Going to raise a Jira ticket'
                             def jiraIssue =
                                     [fields:
                                              [project    : [id: '16941'],
@@ -33,18 +31,9 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath,
                                               fixVersions: [[name: fixVersions]],
                                               issuetype  : [name: issueType]]]
                             response = jiraNewIssue issue: jiraIssue
-                            echo response.successful.toString()
-                            echo response.data.key
+//                            echo response.successful.toString()
+//                            echo response.data.key
                             println (jiraBaseUrl + '/browse/' + response.data.key)
-
-
-//                            echo response.data.toString()
-//                            println issue.summary
-//                            println issue.details
-//                            println jiraComponent
-//                            println jiraprojectName
-//                            println issueType
-//                            println fixVersions
                         }
                 }
 
@@ -72,11 +61,7 @@ def jiraExists(issue){
                 def jiraKeys = []
                 def issues = searchResults.data.issues
                 for (i = 0; i <issues.size(); i++) {
-//                    echo issues[i].key
                     jiraKeys<< issues[i].key
-//                    echo issues[i].key
-//                    jiraBaseUrl =  getJiraBaseUrl()
-//                    println (jiraBaseUrl + '/browse' + issues[i].key)
                 }
                 return jiraKeys
             }
@@ -88,7 +73,6 @@ def getJiraBaseUrl(){
     node {
             withEnv(['JIRA_SITE=LOCAL']) {
                 def serverInfo = jiraGetServerInfo()
-//                echo serverInfo.data.baseUrl
                 return serverInfo.data.baseUrl
             }
     }
