@@ -91,9 +91,7 @@ def getJiraBaseUrl(){
 def uploadLogFile(jiraKey, logsPath){
     node {
         withEnv(['JIRA_SITE=LOCAL']) {
-            println "${workspace}"
             def attachment = jiraUploadAttachment idOrKey: jiraKey, file: "${logsPath}/hello_python.log"
-            echo attachment.data.toString()
         }
     }
 }
