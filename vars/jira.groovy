@@ -23,7 +23,8 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                         println(jiraBaseUrl + '/browse/' + jira)
 //                                        test.failure+ {Bug(jiraBaseUrl + '/browse/' + jira) }
 //                                        test.failure+ {existing_bug_id("https://jira.corporate.local/browse/IPF-8")}
-                                        add_jira(test.failure)
+//                                        add_jira(test.failure)
+                                        uploadLogFile jira, logsPath
                                 }
                             } else {
                                 echo 'Going to raise a Jira ticket'
@@ -38,8 +39,8 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                 response = jiraNewIssue issue: jiraIssue
                                 println(jiraBaseUrl + '/browse/' + response.data.key)
 //                                test.failure+ {existing_bug_id("https://jira.corporate.local/browse/IPF-8")}
-                                add_jira(test.failure)
-//                            uploadLogFile response.data.key
+//                                add_jira(test.failure)
+                            uploadLogFile response.data.key
 
                             }
                             def writer = new FileWriter(resultsfilePath)
@@ -87,11 +88,11 @@ def getJiraBaseUrl(){
     }
 }
 
-def uploadLogFile(jiraKey){
+def uploadLogFile(jiraKey, logsPath){
     node {
         withEnv(['JIRA_SITE=LOCAL']) {
             println "${workspace}"
-            def attachment = jiraUploadAttachment idOrKey: jiraKey, file: "${workspace}/logs/hello_python.log"
+            def attachment = jiraUploadAttachment idOrKey: jiraKey, file: "${logsPath}/hello_python.log"
             echo attachment.data.toString()
         }
     }
