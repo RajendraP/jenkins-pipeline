@@ -22,7 +22,7 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                     jira ->
                                         println(jiraBaseUrl + '/browse/' + jira)
 //                                        test.failure+ {Bug(jiraBaseUrl + '/browse/' + jira) }
-//                                        test.failure+ {existing_bug_id('https://jira.corporate.local/browse/IPF-8')}
+                                        test.failure+ {existing_bug_id("https://jira.corporate.local/browse/IPF-8")}
                                 }
                             } else {
                                 echo 'Going to raise a Jira ticket'
@@ -36,7 +36,7 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                                   issuetype  : [name: issueType]]]
                                 response = jiraNewIssue issue: jiraIssue
                                 println(jiraBaseUrl + '/browse/' + response.data.key)
-//                                test.failure + { Bug(jiraBaseUrl + '/browse/' + response.data.key) }
+                                test.failure+ {existing_bug_id("https://jira.corporate.local/browse/IPF-8")}
 //                            uploadLogFile response.data.key
 
                             }
