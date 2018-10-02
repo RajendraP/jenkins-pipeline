@@ -21,7 +21,8 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                 bugExists.each {
                                     jira ->
                                         println(jiraBaseUrl + '/browse/' + jira)
-                                        test.failure + { Bug(jiraBaseUrl + '/browse/' + jira) }
+//                                        test.failure+ {Bug(jiraBaseUrl + '/browse/' + jira) }
+                                        test.failure+ {Jira('https://jira.corporate.local/browse/IPF-8')}
                                 }
                             } else {
                                 echo 'Going to raise a Jira ticket'
