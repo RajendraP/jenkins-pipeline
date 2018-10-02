@@ -1,6 +1,6 @@
 def call(String jiraprojectName, String jiraComponent, String resultsfilePath, String logsPath,
          String issueType='Bug', String fixVersions='pipeline_fixes') {
-    stage(name: 'Jira') {
+    stage(name: 'Create_Jira') {
         withEnv(['JIRA_SITE=LOCAL']) {
             jiraBaseUrl = getJiraBaseUrl()
             try {
