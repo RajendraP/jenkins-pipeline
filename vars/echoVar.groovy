@@ -1,5 +1,4 @@
 
 def call(String var) {
-    echo "Running $var step.."
+    echo "Running ${var} step.."
 }
-

@@ -1,4 +1,4 @@
-def call(String jiraprojectName, String jiraComponent, String resultsfilePath,
+def call(String jiraprojectName, String jiraComponent, String resultsfilePath, String logsPath,
          String issueType='Bug', String fixVersions='pipeline_fixes') {
     stage(name: 'Jira') {
         withEnv(['JIRA_SITE=LOCAL']) {
@@ -28,7 +28,7 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath,
                                               issuetype  : [name: issueType]]]
                             response = jiraNewIssue issue: jiraIssue
                             println (jiraBaseUrl + '/browse/' + response.data.key)
-                            uploadLogFile response.data.key
+                            //uploadLogFile response.data.key
                         }
                 }
 
@@ -100,7 +100,7 @@ def uploadLogFile(jiraKey){
     node {
         withEnv(['JIRA_SITE=LOCAL']) {
             println "${workspace}"
-            def attachment = jiraUploadAttachment idOrKey: jiraKey, file: "${workspace}/hello_python.log"
+            def attachment = jiraUploadAttachment idOrKey: jiraKey, file: "${workspace}/logs/hello_python.log"
             echo attachment.data.toString()
         }
     }
