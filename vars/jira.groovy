@@ -66,7 +66,7 @@ def jiraExists(issue){
     def jql_str = "PROJECT = IPF AND summary~${summary} AND description~${description} AND status != Done"
     echo jql_str
 
-    node {
+//    node {
         withEnv(['JIRA_SITE=LOCAL']) {
             def searchResults = jiraJqlSearch jql: jql_str
             def jiraKeys = []
@@ -76,23 +76,23 @@ def jiraExists(issue){
             }
             return jiraKeys
         }
-    }
+//    }
 }
 
 def getJiraBaseUrl(){
-    node {
+//    node {
         withEnv(['JIRA_SITE=LOCAL']) {
             def serverInfo = jiraGetServerInfo()
             return serverInfo.data.baseUrl
-        }
+//        }
     }
 }
 
 def uploadLogFile(jiraKey, logsPath){
-    node {
+//    node {
         withEnv(['JIRA_SITE=LOCAL']) {
             def attachment = jiraUploadAttachment idOrKey: jiraKey, file: "${logsPath}/hello_python.log"
-        }
+//        }
     }
 }
 
