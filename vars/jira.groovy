@@ -26,6 +26,8 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                             println(jiraBaseUrl + '/browse/' + jira)
 //                                        test.failure+ {Bug(jiraBaseUrl + '/browse/' + jira) }
 //                                        test.failure+ {existing_bug_id("https://jira.corporate.local/browse/IPF-8")}
+                                            println test.failure[0].toString()
+                                            println test.failure[0].getClass()
                                             new Node(test.failure[0], 'jira', 'https://jira.corporate.local/browse/ION-7935')
 //                                add_jira(test.failure)
 //                                            uploadLogFile jira, logsPath   // ignoring uploading of log file if jira alreay exists as it will upload every time
@@ -57,6 +59,11 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                 echo 'There are no test failures..'
                             }
                     }
+                    def writer = new FileWriter(resultsfilePath)
+//        printer.preserveWhitespace = true
+                    new XmlNodePrinter(new PrintWriter(writer)).print(xml)
+
+
                 } catch (FileNotFoundException e){
                     echo 'Unable to read test results files. File may be missing'
                 }
