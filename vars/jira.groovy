@@ -25,7 +25,7 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
 //                                        test.failure+ {Bug(jiraBaseUrl + '/browse/' + jira) }
 //                                        test.failure+ {existing_bug_id("https://jira.corporate.local/browse/IPF-8")}
 //                                        add_jira(test.failure)
-                                            uploadLogFile jira, logsPath
+//                                            uploadLogFile jira, logsPath
                                     }
                                 } else {
                                     echo 'Going to raise a Jira ticket'
