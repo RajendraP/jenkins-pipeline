@@ -26,8 +26,7 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                             println(jiraBaseUrl + '/browse/' + jira)
 //                                        test.failure+ {Bug(jiraBaseUrl + '/browse/' + jira) }
 //                                        test.failure+ {existing_bug_id("https://jira.corporate.local/browse/IPF-8")}
-                                            println test.failure[0].toString()
-                                            println test.failure[0].getClass()
+                                            test.@name = test.@name + ' - https://jira.corporate.local/browse/ION-7935'
                                             test.failure[0].@jira = 'https://jira.corporate.local/browse/ION-7935'
                                             new Node(test.failure[0], 'jira', 'https://jira.corporate.local/browse/ION-7935')
 //                                add_jira(test.failure)
