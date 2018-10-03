@@ -23,9 +23,9 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                         jira ->
                                             println(jiraBaseUrl + '/browse/' + jira)
 //                                        test.failure+ {Bug(jiraBaseUrl + '/browse/' + jira) }
-//                                        test.failure+ {existing_bug_id("https://jira.corporate.local/browse/IPF-8")}
-//                                        add_jira(test.failure)
-//                                            uploadLogFile jira, logsPath
+                                        test.failure+ {existing_bug_id("https://jira.corporate.local/browse/IPF-8")}
+//                                add_jira(test.failure)
+//                                            uploadLogFile jira, logsPath   // ignoring uploading of log file if jira alreay exists as it will upload every time
                                     }
                                 } else {
                                     echo 'Going to raise a Jira ticket'
@@ -40,7 +40,7 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                                           issuetype  : [name: issueType]]]
                                         response = jiraNewIssue issue: jiraIssue
                                         println(jiraBaseUrl + '/browse/' + response.data.key)
-//                                test.failure+ {existing_bug_id("https://jira.corporate.local/browse/IPF-8")}
+                                test.failure+ {existing_bug_id("https://jira.corporate.local/browse/IPF-8")}
 //                                add_jira(test.failure)
                                         uploadLogFile response.data.key
                                     }catch(Exception ex){
@@ -53,8 +53,8 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                 echo 'There are no test failures..'
                             }
                     }
-                } catch (FileNotFoundException exception){
-                    println 'file not found'
+                } catch (FileNotFoundException e){
+                    echo 'Unable to read test results files. File may be missing'
                 }
             }
         }catch(Exception ex){
@@ -70,7 +70,6 @@ def jiraExists(issue, jiraprojectName){
     description = ((description.split('\\n')[-1]))
     description = (description.split('\\n')[-1]).replace('/', '\\u002f').split(' ')[0]
 
-//    def jql_str = "PROJECT = IPF AND summary~${summary} AND description~${description} AND status != Done"
     def jql_str = "PROJECT = ${jiraprojectName} AND summary~${summary} AND description~${description} AND status != Done"
     echo jql_str
     try{
