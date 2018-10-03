@@ -59,9 +59,11 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                 echo 'There are no test failures..'
                             }
                     }
-                    def writer = new FileWriter(resultsfilePath)
+                    def writer = new File(resultsfilePath)
 //        printer.preserveWhitespace = true
-                    new XmlNodePrinter(new PrintWriter(writer)).print(xml)
+                    println xml.toString()
+                    writer.write xml.toString()
+//                    new XmlNodePrinter(new PrintWriter(writer)).print(xml)
 
 
                 } catch (FileNotFoundException e){
