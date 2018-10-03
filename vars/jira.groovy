@@ -23,7 +23,7 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                         jira ->
                                             println(jiraBaseUrl + '/browse/' + jira)
 //                                        test.failure+ {Bug(jiraBaseUrl + '/browse/' + jira) }
-                                        test.failure+ {existing_bug_id("https://jira.corporate.local/browse/IPF-8")}
+                                        test.failure+ {existing_bug_id "https://jira.corporate.local/browse/IPF-8"}
 //                                add_jira(test.failure)
 //                                            uploadLogFile jira, logsPath   // ignoring uploading of log file if jira alreay exists as it will upload every time
                                     }
