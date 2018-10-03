@@ -24,8 +24,6 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                     bugExists.each {
                                         jira ->
                                             println(jiraBaseUrl + '/browse/' + jira)
-//                                        test.failure+ {Bug(jiraBaseUrl + '/browse/' + jira) }
-//                                        test.failure+ {existing_bug_id("https://jira.corporate.local/browse/IPF-8")}
                                             test.failure.@'message' = test.failure.@'message' + ' - https://jira.corporate.local/browse/ION-7935'
 
 //                                            test.failure.text = test.failure.text() + ' - https://jira.corporate.local/browse/ION-7935'
