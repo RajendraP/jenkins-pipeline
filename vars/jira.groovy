@@ -16,7 +16,7 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                 failedTest.put('details', test.failure.text())
                                 failedTest.put('description', test.properties.property.'@value'[0].trim())
 
-                                bugExists = jiraExists(failedTest)
+                                bugExists = jiraExists(failedTest, jiraprojectName)
                                 if (bugExists) {
                                     echo 'Jira ticket already exists'
                                     bugExists.each {
@@ -64,13 +64,14 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
 }
 
 
-def jiraExists(issue){
+def jiraExists(issue, jiraprojectName){
     summary = issue.summary
     description = issue.details
     description = ((description.split('\\n')[-1]))
     description = (description.split('\\n')[-1]).replace('/', '\\u002f').split(' ')[0]
 
-    def jql_str = "PROJECT = IPF AND summary~${summary} AND description~${description} AND status != Done"
+//    def jql_str = "PROJECT = IPF AND summary~${summary} AND description~${description} AND status != Done"
+    def jql_str = "PROJECT = ${jiraprojectName} AND summary~${summary} AND description~${description} AND status != Done"
     echo jql_str
     try{
         withEnv(['JIRA_SITE=LOCAL']) {
