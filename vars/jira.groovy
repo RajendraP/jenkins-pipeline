@@ -48,7 +48,7 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                         def jiraIssue =
                                                 [fields:
                                                          [project    : [idOrKey: jiraprojectName],
-                                                          summary    : jira_query,
+                                                          summary    : summary,
                                                           description: failedTest.details,
                                                           components : [[name: jiraComponent]],
                                                           fixVersions: [[name: fixVersions]],
