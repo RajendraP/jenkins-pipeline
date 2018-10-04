@@ -11,12 +11,14 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                             def failedTest = [:]
                             def bugExists = []
                             if (test.failure) {
-//                                failedTest.put('summary', test.@name)
-//                                failedTest.put('file', test.@file)
-//                                failedTest.put('details', test.failure.text())
-//                                failedTest.put('description', test.properties.property.'@value'[0].trim())
+                                failedTest.put('summary', test.@name)
+                                failedTest.put('message', test.failure.@'message'[0].split('   ')[0])
+                                failedTest.put('file', test.@file)
+                                failedTest.put('details', test.failure.text())
+                                failedTest.put('description', test.properties.property.'@value'[0].trim())
 
-                                bugExists = jiraExists(test, jiraComponent)
+                                echo 'going to call jiraExists'
+                                bugExists = jiraExists(failedTest, jiraComponent)
                                 if (bugExists) {
                                     echo 'Jira ticket already exists'
                                     bugExists.each {
@@ -89,9 +91,9 @@ def jiraExists(failedTest, jiraComponent){
 //    def jql_str = "summary~${summary} AND description~${description} AND status != Done"
 //    echo jql_str
 
-
-    summary = test.@name
-    message = test.failure.@'message'[0].split('   ')[0]
+    echo 'inside jira exists'
+    summary = issue.summary
+    message = issue.message
     def jira_query = jiraComponent + ': ' + summary + ': ' + message
     jira_query = jira_query.replace("'", "\\'")
     jira_query =  "\"${jira_query}\""
@@ -105,6 +107,7 @@ def jiraExists(failedTest, jiraComponent){
                 def issues = searchResults.data.issues
                 for (i = 0; i <issues.size(); i++) {
                     try{
+                        echo 'a'
                         def issue = jiraGetIssue idOrKey: issues[i].key
                         def bugSummary = issue.data.fields.summary
                         println bugSummary
