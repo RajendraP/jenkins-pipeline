@@ -18,7 +18,7 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                 failedTest.put('details', test.failure.text())
                                 failedTest.put('description', test.properties.property.'@value'[0].trim())
 
-                                bugExists = jiraExists(failedTest, jiraprojectName)
+                                bugExists = jiraExists(failedTest)
                                 if (bugExists) {
                                     echo 'Jira ticket already exists'
                                     bugExists.each {
