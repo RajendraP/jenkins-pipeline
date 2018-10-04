@@ -52,7 +52,8 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                                           description: failedTest.details,
                                                           components : [[name: jiraComponent]],
                                                           fixVersions: [[name: fixVersions]],
-                                                          issuetype  : [name: issueType]]]
+                                                          issuetype  : [name: issueType],
+                                                          labels:'PipelineBug']]
                                         response = jiraNewIssue issue: jiraIssue
                                         println(jiraBaseUrl + '/browse/' + response.data.key)
 //                                        test.@name = test.@name + ' - https://jira.corporate.local/browse/ION-7935'
