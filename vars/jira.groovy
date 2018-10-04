@@ -1,5 +1,3 @@
-//import groovy.util.Node
-
 def call(String jiraprojectName, String jiraComponent, String resultsfilePath, String logsPath,
          String issueType='Bug', String fixVersions='pipeline_fixes') {
     stage(name: 'Create_Jira') {
@@ -10,15 +8,15 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                     def xml = new XmlParser().parse(resultsfilePath)
                     xml.testcase.each {
                         test ->
-                            def failedTest = [:]
+//                            def failedTest = [:]
                             def bugExists = []
                             if (test.failure) {
-                                failedTest.put('summary', test.@name)
-                                failedTest.put('file', test.@file)
-                                failedTest.put('details', test.failure.text())
-                                failedTest.put('description', test.properties.property.'@value'[0].trim())
+//                                failedTest.put('summary', test.@name)
+//                                failedTest.put('file', test.@file)
+//                                failedTest.put('details', test.failure.text())
+//                                failedTest.put('description', test.properties.property.'@value'[0].trim())
 
-                                bugExists = jiraExists(failedTest)
+                                bugExists = jiraExists(test)
                                 if (bugExists) {
                                     echo 'Jira ticket already exists'
                                     bugExists.each {
@@ -35,12 +33,17 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                     }
                                 } else {
                                     echo 'Going to raise a Jira ticket'
+                                    summary = test.@name
+                                    message = test.failure.@'message'[0].split('   ')[0]
+                                    jira_summary = jiraComponent + ':' + summary + ': ' + message
+                                    echo jira_summary
+
                                     try{
                                         def jiraIssue =
                                                 [fields:
                                                          [project    : [idOrKey: jiraprojectName],
-                                                          summary    : failedTest.summary,
-                                                          description: failedTest.details,
+                                                          summary    : jira_summary,
+                                                          description: test.failure.text(),
                                                           components : [[name: jiraComponent]],
                                                           fixVersions: [[name: fixVersions]],
                                                           issuetype  : [name: issueType]]]
@@ -78,13 +81,20 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
 }
 
 
-def jiraExists(issue){
-    summary = issue.summary
-    description = issue.details
-    description = ((description.split('\\n')[-1]))
-    description = (description.split('\\n')[-1]).replace('/', '\\u002f').split(' ')[0]
+def jiraExists(test){
 
-    def jql_str = "summary~${summary} AND description~${description} AND status != Done"
+//    failedTest.put('summary', test.@name)
+//                                failedTest.put('file', test.@file)
+//                                failedTest.put('details', test.failure.text())
+//                                failedTest.put('description', test.properties.property.'@value'[0].trim())
+
+    summary = test.@name
+    message = test.failure.@'message'[0].split('   ')[0]
+    def jira_summary = jiraComponent + ':' + summary + ': ' + message
+    println jira_summary
+
+
+    def jql_str = "summary~${summary} AND status != Done"
     echo jql_str
     try{
         withEnv(['JIRA_SITE=LOCAL']) {
@@ -93,7 +103,18 @@ def jiraExists(issue){
                 def jiraKeys = []
                 def issues = searchResults.data.issues
                 for (i = 0; i <issues.size(); i++) {
-                    jiraKeys<< issues[i].key
+                    try{
+                        def issue = jiraGetIssue idOrKey: issues[i].key
+                        def bugSummary = issue.data.fields.summary
+                        println bugSummary
+                        if (jira_summary == bugSummary){
+                            echo 'Duplicate bug found..'
+                            jiraKeys<<issues[i].key
+                        }
+                    }
+                    catch (Exception ex){
+                        echo 'failed to get details from jiraGetIssue'
+                    }
                 }
                 return jiraKeys
             }
@@ -136,6 +157,6 @@ def uploadLogFile(jiraKey, logsPath){
     }
 }
 
-def add_jira(failure){
-    failure+ {bug_id("https://jira.corporate.local/browse/IPF-8")}
-}
+//def add_jira(failure){
+//    failure+ {bug_id("https://jira.corporate.local/browse/IPF-8")}
+//}
