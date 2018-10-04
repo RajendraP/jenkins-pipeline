@@ -98,10 +98,12 @@ def jiraExists(failedTest, jiraComponent){
     jira_query = jira_query.replace("'", "\\'")
     jira_query =  "\"${jira_query}\""
     def jql_str = "summary~${jira_query} AND status != Done"
+    println jql_str
 
     try{
         withEnv(['JIRA_SITE=LOCAL']) {
             try{
+                echo 'b'
                 def searchResults = jiraJqlSearch jql: jql_str
                 def jiraKeys = []
                 def issues = searchResults.data.issues
