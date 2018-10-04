@@ -92,9 +92,10 @@ def jiraExists(failedTest, jiraComponent){
 //    echo jql_str
 
     echo 'inside jira exists'
-    summary = issue.summary
-    message = issue.message
+    summary = failedTest.summary
+    message = failedTest.message
     def jira_query = jiraComponent + ': ' + summary + ': ' + message
+
     jira_query = jira_query.replace("'", "\\'")
     jira_query =  "\"${jira_query}\""
     def jql_str = "summary~${jira_query} AND status != Done"
