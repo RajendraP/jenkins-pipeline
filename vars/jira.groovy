@@ -8,15 +8,15 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                     def xml = new XmlParser().parse(resultsfilePath)
                     xml.testcase.each {
                         test ->
-//                            def failedTest = [:]
+                            def failedTest = [:]
                             def bugExists = []
                             if (test.failure) {
-//                                failedTest.put('summary', test.@name)
-//                                failedTest.put('file', test.@file)
-//                                failedTest.put('details', test.failure.text())
-//                                failedTest.put('description', test.properties.property.'@value'[0].trim())
+                                failedTest.put('summary', test.@name)
+                                failedTest.put('file', test.@file)
+                                failedTest.put('details', test.failure.text())
+                                failedTest.put('description', test.properties.property.'@value'[0].trim())
 
-                                bugExists = jiraExists(test)
+                                bugExists = jiraExists(failedTest)
                                 if (bugExists) {
                                     echo 'Jira ticket already exists'
                                     bugExists.each {
@@ -28,22 +28,16 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
 //                                            test.failure.text = test.failure.text() + ' - https://jira.corporate.local/browse/ION-7935'
 //                                            test.failure[0].@jira = 'https://jira.corporate.local/browse/ION-7935'
 //                                            new Node(test.failure[0], 'jira', 'https://jira.corporate.local/browse/ION-7935')
-//                                add_jira(test.failure)
 //                                            uploadLogFile jira, logsPath   // ignoring uploading of log file if jira alreay exists as it will upload every time
                                     }
                                 } else {
                                     echo 'Going to raise a Jira ticket'
-                                    summary = test.@name
-                                    message = test.failure.@'message'[0].split('   ')[0]
-                                    jira_summary = jiraComponent + ':' + summary + ': ' + message
-                                    echo jira_summary
-
                                     try{
                                         def jiraIssue =
                                                 [fields:
                                                          [project    : [idOrKey: jiraprojectName],
-                                                          summary    : jira_summary,
-                                                          description: test.failure.text(),
+                                                          summary    : failedTest.summary,
+                                                          description: failedTest.details,
                                                           components : [[name: jiraComponent]],
                                                           fixVersions: [[name: fixVersions]],
                                                           issuetype  : [name: issueType]]]
@@ -55,8 +49,7 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
 //                                        test.failure[0].@jira = 'https://jira.corporate.local/browse/ION-7935'
 //                                test.failure+ {existing_bug_id("https://jira.corporate.local/browse/IPF-8")}
 //                                        new Node(test.failure[0], 'jira', 'https://jira.corporate.local/browse/ION-7935')
-//                                add_jira(test.failure)
-                                        uploadLogFile response.data.key
+//                                        uploadLogFile response.data.key
                                     }catch(Exception ex){
                                         echo 'faild to raise jira ticket'
                                     }
@@ -81,20 +74,13 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
 }
 
 
-def jiraExists(test){
+def jiraExists(issue){
+    summary = issue.summary
+    description = issue.details
+    description = ((description.split('\\n')[-1]))
+    description = (description.split('\\n')[-1]).replace('/', '\\u002f').split(' ')[0]
 
-//    failedTest.put('summary', test.@name)
-//                                failedTest.put('file', test.@file)
-//                                failedTest.put('details', test.failure.text())
-//                                failedTest.put('description', test.properties.property.'@value'[0].trim())
-
-    summary = test.@name
-    message = test.failure.@'message'[0].split('   ')[0]
-    def jira_summary = jiraComponent + ':' + summary + ': ' + message
-    println jira_summary
-
-
-    def jql_str = "summary~${summary} AND status != Done"
+    def jql_str = "summary~${summary} AND description~${description} AND status != Done"
     echo jql_str
     try{
         withEnv(['JIRA_SITE=LOCAL']) {
@@ -103,18 +89,7 @@ def jiraExists(test){
                 def jiraKeys = []
                 def issues = searchResults.data.issues
                 for (i = 0; i <issues.size(); i++) {
-                    try{
-                        def issue = jiraGetIssue idOrKey: issues[i].key
-                        def bugSummary = issue.data.fields.summary
-                        println bugSummary
-                        if (jira_summary == bugSummary){
-                            echo 'Duplicate bug found..'
-                            jiraKeys<<issues[i].key
-                        }
-                    }
-                    catch (Exception ex){
-                        echo 'failed to get details from jiraGetIssue'
-                    }
+                    jiraKeys<< issues[i].key
                 }
                 return jiraKeys
             }
@@ -156,7 +131,3 @@ def uploadLogFile(jiraKey, logsPath){
         echo 'Failed to connect to Jira'
     }
 }
-
-//def add_jira(failure){
-//    failure+ {bug_id("https://jira.corporate.local/browse/IPF-8")}
-//}
