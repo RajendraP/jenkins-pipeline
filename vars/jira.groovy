@@ -1,80 +1,90 @@
 def call(String jiraprojectName, String jiraComponent, String resultsfilePath, String logsPath,
          String issueType='Bug', String fixVersions='pipeline_fixes') {
     stage(name: 'Jira') {
-        withEnv(['JIRA_SITE=LOCAL']) {
-            failures = parseTestResultXML resultsfilePath
-            if (failures) {
-                jiraBaseUrl =  getJiraBaseUrl()
-                failures.each {
-                    issue ->
-                        // query jira & find if any duplicates, if dup, skip if not continue
-                        def bugExists = []
-                        bugExists = jiraExists(issue)
-                        if (bugExists) {
-                            echo 'Jira ticket already exists'
-                            bugExists.each{
-                                jira ->
-                                println (jiraBaseUrl + '/browse/' + jira)
+        try {
+            withEnv(['JIRA_SITE=LOCAL']) {
+                jiraBaseUrl = getJiraBaseUrl()
+                try {
+                    def xml = new XmlParser().parse(resultsfilePath)
+                    xml.testcase.each {
+                        test ->
+                            def failedTest = [:]
+                            def bugExists = []
+                            if (test.failure) {
+                                failedTest.put('summary', test.@name)
+                                failedTest.put('file', test.@file)
+                                failedTest.put('details', test.failure.text())
+                                failedTest.put('description', test.properties.property.'@value'[0].trim())
+
+                                bugExists = jiraExists(failedTest)
+                                if (bugExists) {
+                                    echo 'Jira ticket already exists'
+                                    bugExists.each {
+                                        jira ->
+                                            println(jiraBaseUrl + '/browse/' + jira)
+                                            test.failure.@'message' = test.failure.@'message'[0] + ' - https://jira.corporate.local/browse/ION-7935'
+//                                            href_tag = '<p>This is a <a href=\'https://jira.corporate.local/browse/ION-7935\'>https://jira.corporate.local/browse/ION-7935</a> to another page</p>'
+//                                            test.failure.@'message' = test.failure.@'message' + "${href_tag}"
+//                                            test.failure.text = test.failure.text() + ' - https://jira.corporate.local/browse/ION-7935'
+//                                            test.failure[0].@jira = 'https://jira.corporate.local/browse/ION-7935'
+//                                            new Node(test.failure[0], 'jira', 'https://jira.corporate.local/browse/ION-7935')
+//                                            uploadLogFile jira, logsPath   // ignoring uploading of log file if jira alreay exists as it will upload every time
+                                    }
+                                } else {
+                                    echo 'Going to raise a Jira ticket'
+                                    try{
+                                        def jiraIssue =
+                                                [fields:
+                                                         [project    : [idOrKey: jiraprojectName],
+                                                          summary    : failedTest.summary,
+                                                          description: failedTest.details,
+                                                          components : [[name: jiraComponent]],
+                                                          fixVersions: [[name: fixVersions]],
+                                                          issuetype  : [name: issueType]]]
+                                        response = jiraNewIssue issue: jiraIssue
+                                        println(jiraBaseUrl + '/browse/' + response.data.key)
+//                                        test.@name = test.@name + ' - https://jira.corporate.local/browse/ION-7935'
+//                                        test.@details = test.@details + ' - https://jira.corporate.local/browse/ION-7935'
+                                        test.failure.@'message' = test.failure.@'message' + ' - https://jira.corporate.local/browse/ION-7935'
+//                                        test.failure[0].@jira = 'https://jira.corporate.local/browse/ION-7935'
+//                                test.failure+ {existing_bug_id("https://jira.corporate.local/browse/IPF-8")}
+//                                        new Node(test.failure[0], 'jira', 'https://jira.corporate.local/browse/ION-7935')
+//                                        uploadLogFile response.data.key
+                                    }catch(Exception ex){
+                                        echo 'faild to raise jira ticket'
+                                    }
+                                }
+//                                def writer = new FileWriter(resultsfilePath)
+//                                new XmlNodePrinter(new PrintWriter(writer)).print(xml)
+                            }else {
+                                echo 'There are no test failures..'
                             }
-                        } else {
-                            echo 'Going to raise a Jira ticket'
-                            def jiraIssue =
-                                    [fields:
-                                             [project    : [id: '16941'],
-                                              summary    : issue.summary,
-                                              description: issue.details,
-                                              components : [[name: jiraComponent]],
-                                              fixVersions: [[name: fixVersions]],
-                                              issuetype  : [name: issueType]]]
-                            response = jiraNewIssue issue: jiraIssue
-                            println (jiraBaseUrl + '/browse/' + response.data.key)
-                            //uploadLogFile response.data.key
-                        }
+                    }
+                    def writer = new FileWriter(resultsfilePath)
+//        printer.preserveWhitespace = true
+                    new XmlNodePrinter(new PrintWriter(writer)).print(xml)
+                } catch (FileNotFoundException e){
+                    echo 'Unable to read test results files. File may be missing'
                 }
-
             }
-            else{
-                echo 'There are no test failures..'
-            }
+        }catch(Exception ex){
+            echo 'Failed to connect to Jira'
         }
     }
 }
 
-
-def parseTestResultXML(String testresultsfilePath){
-    def jira_issues = []
-    try {
-        def xml = new XmlParser().parse(testresultsfilePath)
-        xml.testcase.each{
-            test ->
-                def failedTests = [:]
-                if (test.failure){
-                    failedTests.put('summary', test.@name)
-                    failedTests.put('file', test.@file)
-                    failedTests.put('details', test.failure.text())
-                    failedTests.put('description', test.properties.property.'@value'[0].trim())
-                    jira_issues << failedTests
-                }
-        }
-        jira_issues
-    }
-    catch (FileNotFoundException ex){
-        println("Catching the exception: ${ex.message}")
-    }
-    jira_issues
-}
 
 def jiraExists(issue){
     summary = issue.summary
     description = issue.details
-    details = ((description.split('\\n')[-1]))
-    details = (description.split('\\n')[-1]).replace('/', '\\u002f').split(' ')[0]
+    description = ((description.split('\\n')[-1]))
+    description = (description.split('\\n')[-1]).replace('/', '\\u002f').split(' ')[0]
 
-    def jql_str = "PROJECT = IPF AND summary~${summary} AND description~${details} AND status != Done"
+    def jql_str = "summary~${summary} AND description~${description} AND status != Done"
     echo jql_str
-
-    node {
-            withEnv(['JIRA_SITE=LOCAL']) {
+    try{
+        withEnv(['JIRA_SITE=LOCAL']) {
+            try{
                 def searchResults = jiraJqlSearch jql: jql_str
                 def jiraKeys = []
                 def issues = searchResults.data.issues
@@ -83,25 +93,41 @@ def jiraExists(issue){
                 }
                 return jiraKeys
             }
+            catch (Exception ex){
+                echo 'failed to get details from JiraJqlSearch'
+            }
+        }
+    }catch(Exception ex){
+        echo 'failed to connect to Jira'
     }
 }
 
 def getJiraBaseUrl(){
-    node {
-            withEnv(['JIRA_SITE=LOCAL']) {
+    try{
+        withEnv(['JIRA_SITE=LOCAL']) {
+            try{
                 def serverInfo = jiraGetServerInfo()
                 return serverInfo.data.baseUrl
             }
+            catch (Exception ex){
+                echo 'Failed to get Jira Server Info'
+            }
+        }
+    }catch (Exception ex) {
+        echo 'Failed to connect to Jira'
     }
 }
 
-
-def uploadLogFile(jiraKey){
-    node {
+def uploadLogFile(jiraKey, logsPath){
+    try{
         withEnv(['JIRA_SITE=LOCAL']) {
-            println "${workspace}"
-            def attachment = jiraUploadAttachment idOrKey: jiraKey, file: "${workspace}/logs/hello_python.log"
-            echo attachment.data.toString()
+            try {
+                def attachment = jiraUploadAttachment idOrKey: jiraKey, file: "${logsPath}/hello_python.log"
+            }catch(Exception ex){
+                echo 'Failed to upload log file to jira'
+            }
         }
+    }catch(Exception ex){
+        echo 'Failed to connect to Jira'
     }
 }
