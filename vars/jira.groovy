@@ -24,8 +24,9 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                     bugExists.each {
                                         jira ->
                                             println(jiraBaseUrl + '/browse/' + jira)
-                                            test.failure.@'message' = test.failure.@'message' + ' - https://jira.corporate.local/browse/ION-7935'
-
+//                                            test.failure.@'message' = test.failure.@'message' + ' - https://jira.corporate.local/browse/ION-7935'
+                                            href_tag = '<p>This is a <a href=\'https://jira.corporate.local/browse/ION-7935\'>https://jira.corporate.local/browse/ION-7935</a> to another page</p>'
+                                            test.failure.@'message' = test.failure.@'message' + "${href_tag}"
 //                                            test.failure.text = test.failure.text() + ' - https://jira.corporate.local/browse/ION-7935'
 //                                            test.failure[0].@jira = 'https://jira.corporate.local/browse/ION-7935'
 //                                            new Node(test.failure[0], 'jira', 'https://jira.corporate.local/browse/ION-7935')
