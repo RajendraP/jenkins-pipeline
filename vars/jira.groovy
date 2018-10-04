@@ -40,7 +40,7 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                         def jira_query = jiraComponent + ': ' + summary + ': ' + message
                                         echo 'c'
                                         println jira_query
-                                        jira_query =  "\"${jira_query}\""
+//                                        jira_query =  "\"${jira_query}\""
 
                                         //jira_query = jira_query.replace("'", "\\'")
                                         //jira_query =  "\"${jira_query}\""
@@ -100,9 +100,9 @@ def jiraExists(failedTest, jiraComponent){
     message = failedTest.message
     def jira_query = jiraComponent + ': ' + summary + ': ' + message
 
-    jira_query = jira_query.replace("'", "\\'")
-    jira_query =  "\"${jira_query}\""
-    def jql_str = "summary~${jira_query} AND status != Done"
+    def jira_query_updated = jira_query.replace("'", "\\'")
+    jira_query_updated =  "\"${jira_query_updated}\""
+    def jql_str = "summary~${jira_query_updated} AND status != Done"
     println jql_str
 
     try{
@@ -118,6 +118,7 @@ def jiraExists(failedTest, jiraComponent){
                         def issue = jiraGetIssue idOrKey: issues[i].key
                         def bugSummary = issue.data.fields.summary
                         println bugSummary
+                        println jira_query
                         if (jira_query == bugSummary){
                             echo 'Duplicate bug found..'
                             jiraKeys<<issues[i].key
