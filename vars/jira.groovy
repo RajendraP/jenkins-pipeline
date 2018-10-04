@@ -1,4 +1,4 @@
-def call(String jiraprojectName, String jiraComponent, String resultsfilePath, String logsPath,
+def call(String jiraprojectName, String jiraComponent, String[] labels, String resultsfilePath, String logsPath,
          String issueType='Bug', String fixVersions='pipeline_fixes') {
     stage(name: 'Jira') {
         try {
@@ -53,7 +53,7 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                                           components : [[name: jiraComponent]],
                                                           fixVersions: [[name: fixVersions]],
                                                           issuetype  : [name: issueType],
-                                                          labels:['PipelineBug']]]
+                                                          labels:labels]]
                                         response = jiraNewIssue issue: jiraIssue
                                         println(jiraBaseUrl + '/browse/' + response.data.key)
 //                                        test.@name = test.@name + ' - https://jira.corporate.local/browse/ION-7935'
