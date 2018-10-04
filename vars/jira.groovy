@@ -38,6 +38,9 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                         summary = test.@name
                                         message = test.failure.@'message'[0].split('   ')[0]
                                         def jira_query = jiraComponent + ': ' + summary + ': ' + message
+                                        echo 'c'
+                                        println jira_query
+
                                         //jira_query = jira_query.replace("'", "\\'")
                                         //jira_query =  "\"${jira_query}\""
 
