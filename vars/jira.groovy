@@ -40,6 +40,7 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                         def jira_query = jiraComponent + ': ' + summary + ': ' + message
                                         echo 'c'
                                         println jira_query
+                                        jira_query =  "\"${jira_query}\""
 
                                         //jira_query = jira_query.replace("'", "\\'")
                                         //jira_query =  "\"${jira_query}\""
