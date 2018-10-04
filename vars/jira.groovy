@@ -1,4 +1,4 @@
-import groovy.util.Node
+//import groovy.util.Node
 
 def call(String jiraprojectName, String jiraComponent, String resultsfilePath, String logsPath,
          String issueType='Bug', String fixVersions='pipeline_fixes') {
@@ -24,7 +24,7 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                                     bugExists.each {
                                         jira ->
                                             println(jiraBaseUrl + '/browse/' + jira)
-                                            test.failure.@'message' = test.failure.@'message' + ' - https://jira.corporate.local/browse/ION-7935'
+                                            test.failure.@'message' = test.failure.@'message'[0] + ' - https://jira.corporate.local/browse/ION-7935'
 //                                            href_tag = '<p>This is a <a href=\'https://jira.corporate.local/browse/ION-7935\'>https://jira.corporate.local/browse/ION-7935</a> to another page</p>'
 //                                            test.failure.@'message' = test.failure.@'message' + "${href_tag}"
 //                                            test.failure.text = test.failure.text() + ' - https://jira.corporate.local/browse/ION-7935'
@@ -78,13 +78,13 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
 }
 
 
-def jiraExists(issue, jiraprojectName){
+def jiraExists(issue){
     summary = issue.summary
     description = issue.details
     description = ((description.split('\\n')[-1]))
     description = (description.split('\\n')[-1]).replace('/', '\\u002f').split(' ')[0]
 
-    def jql_str = "PROJECT = ${jiraprojectName} AND summary~${summary} AND description~${description} AND status != Done"
+    def jql_str = "summary~${summary} AND description~${description} AND status != Done"
     echo jql_str
     try{
         withEnv(['JIRA_SITE=LOCAL']) {
