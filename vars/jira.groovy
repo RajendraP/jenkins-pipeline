@@ -128,7 +128,7 @@ def getJiraBaseUrl(){
 }
 
 def raiseBug(jiraComponent, fixVersions, issueType, labels, jiraBaseUrl, test) {
-    echo 'Going to raise a Jira ticket'
+//    echo 'Going to raise a Jira ticket'
     try {
         withEnv(['JIRA_SITE=LOCAL']) {
             try {
