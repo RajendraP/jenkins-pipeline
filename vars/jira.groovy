@@ -1,9 +1,9 @@
-def call(String jiraComponent, String resultsfilePath, String[] labels=[],
+def call(String jiraComponent, String resultsFilePath, String[] labels=[],
          String issueType='Bug', String fixVersions='pipeline_fixes') {
     stage(name: 'Jira') {
         jiraBaseUrl = getJiraBaseUrl()
         try {
-            def testResults = new XmlParser().parse(resultsfilePath)
+            def testResults = new XmlParser().parse(resultsFilePath)
             testResults.testcase.each {
                 test ->
                     if (test.failure) {
@@ -22,7 +22,7 @@ def call(String jiraComponent, String resultsfilePath, String[] labels=[],
                     }
                 }
             try {
-                FileWriter writer = new FileWriter(resultsfilePath)
+                FileWriter writer = new FileWriter(resultsFilePath)
                 new XmlNodePrinter(new PrintWriter(writer)).print(testResults)
                 } catch (Exception ex){
                 println "Failed to update results file: ${ex.message}"
