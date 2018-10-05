@@ -131,5 +131,6 @@ def getJiraSummary(jiraComponent, failedTest){
 
 def appendBugId(jiraBaseUrl, jiraKey, test){
     jiraLink = jiraBaseUrl + '/browse/' + jiraKey
+    println jiraLink
     test.failure.@'message' = test.failure.@'message'[0] + '\n' + jiraLink
 }
