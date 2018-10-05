@@ -8,73 +8,35 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                     def xml = new XmlParser().parse(resultsfilePath)
                     xml.testcase.each {
                         test ->
-                            def failedTest = [:]
-                            def bugExists = []
+//                            def failedTest = [:]
+//                            def bugExists = []
                             if (test.failure) {
-                                failedTest.put('summary', test.@name)
-                                failedTest.put('message', test.failure.@'message'[0].split('   ')[0])
-                                failedTest.put('file', test.@file)
-                                failedTest.put('details', test.failure.text())
-                                failedTest.put('description', test.properties.property.'@value'[0].trim())
+//                                failedTest.put('summary', test.@name)
+//                                failedTest.put('message', test.failure.@'message'[0].split('   ')[0])
+//                                failedTest.put('file', test.@file)
+//                                failedTest.put('details', test.failure.text())
+//                                failedTest.put('description', test.properties.property.'@value'[0].trim())
 
                                 echo 'going to call jiraExists'
-                                bugExists = jiraExists(failedTest, jiraComponent)
+                                def bugExists = []
+                                bugExists = jiraExists jiraComponent, test
                                 if (bugExists) {
                                     echo 'Jira ticket already exists'
                                     bugExists.each {
                                         jira ->
-                                            println(jiraBaseUrl + '/browse/' + jira)
-                                            test.failure.@'message' = test.failure.@'message'[0] + ' - https://jira.corporate.local/browse/ION-7935'
-//                                            href_tag = '<p>This is a <a href=\'https://jira.corporate.local/browse/ION-7935\'>https://jira.corporate.local/browse/ION-7935</a> to another page</p>'
-//                                            test.failure.@'message' = test.failure.@'message' + "${href_tag}"
-//                                            test.failure.text = test.failure.text() + ' - https://jira.corporate.local/browse/ION-7935'
-//                                            test.failure[0].@jira = 'https://jira.corporate.local/browse/ION-7935'
-//                                            new Node(test.failure[0], 'jira', 'https://jira.corporate.local/browse/ION-7935')
-//                                            uploadLogFile jira, logsPath   // ignoring uploading of log file if jira alreay exists as it will upload every time
+                                            def bugId = jiraBaseUrl + '/browse/' + jira
+                                            println bugId
+                                            test.failure.@'message' = test.failure.@'message'[0] + '\n' + bugId
                                     }
                                 } else {
                                     echo 'Going to raise a Jira ticket'
-                                    try{
-                                        summary = test.@name
-                                        message = test.failure.@'message'[0].split('   ')[0]
-                                        def jira_query = jiraComponent + ': ' + summary + ': ' + message
-                                        echo 'c'
-                                        println jira_query
-//                                        jira_query =  "\"${jira_query}\""
-
-                                        //jira_query = jira_query.replace("'", "\\'")
-                                        //jira_query =  "\"${jira_query}\""
-
-                                        def jiraIssue =
-                                                [fields:
-                                                         [project    : [id: '16941'],
-                                                          summary    : jira_query,
-                                                          description: failedTest.details,
-                                                          components : [[name: jiraComponent]],
-                                                          fixVersions: [[name: fixVersions]],
-                                                          issuetype  : [name: issueType],
-                                                          labels:labels]]
-                                        response = jiraNewIssue issue: jiraIssue
-                                        println(jiraBaseUrl + '/browse/' + response.data.key)
-//                                        test.@name = test.@name + ' - https://jira.corporate.local/browse/ION-7935'
-//                                        test.@details = test.@details + ' - https://jira.corporate.local/browse/ION-7935'
-                                        test.failure.@'message' = test.failure.@'message' + ' - https://jira.corporate.local/browse/ION-7935'
-//                                        test.failure[0].@jira = 'https://jira.corporate.local/browse/ION-7935'
-//                                test.failure+ {existing_bug_id("https://jira.corporate.local/browse/IPF-8")}
-//                                        new Node(test.failure[0], 'jira', 'https://jira.corporate.local/browse/ION-7935')
-//                                        uploadLogFile response.data.key
-                                    }catch(Exception ex){
-                                        echo 'faild to raise jira ticket'
-                                    }
+                                    raiseBug jiraComponent, fixVersions, issueType, labels, jiraBaseUrl, test
                                 }
-//                                def writer = new FileWriter(resultsfilePath)
-//                                new XmlNodePrinter(new PrintWriter(writer)).print(xml)
                             }else {
                                 echo 'There are no test failures..'
                             }
                     }
                     def writer = new FileWriter(resultsfilePath)
-//        printer.preserveWhitespace = true
                     new XmlNodePrinter(new PrintWriter(writer)).print(xml)
                 } catch (FileNotFoundException e){
                     echo 'Unable to read test results files. File may be missing'
@@ -87,7 +49,7 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
 }
 
 
-def jiraExists(failedTest, jiraComponent){
+def jiraExists(jiraComponent, failedTest){
 //    summary = issue.summary
 //    description = issue.details
 //    description = ((description.split('\\n')[-1]))
@@ -96,31 +58,40 @@ def jiraExists(failedTest, jiraComponent){
 //    def jql_str = "summary~${summary} AND description~${description} AND status != Done"
 //    echo jql_str
 
-    echo 'inside jira exists'
-    summary = failedTest.summary
-    message = failedTest.message
-    def jira_query = jiraComponent + ': ' + summary + ': ' + message
+//    failedTest.put('summary', test.@name)
+//    failedTest.put('message', test.failure.@'message'[0].split('   ')[0])
+//    failedTest.put('file', test.@file)
+//    failedTest.put('details', test.failure.text())
+//    failedTest.put('description', test.properties.property.'@value'[0].trim())
 
-    def jira_query_updated = jira_query.replace("'", "\\'")
-    jira_query_updated =  "\"${jira_query_updated}\""
-    def jql_str = "summary~${jira_query_updated} AND status != Done"
+    echo 'inside jira exists'
+//    summary = failedTest.@name
+//     message = failedTest.failure.@'message'[0].split('   ')[0]
+//    def jira_summary = jiraComponent + ': ' + summary + ': ' + message
+//    jira_summary= jira_summary.take(220)
+
+    jira_summary = getJiraSummary(jiraComponent, failedTest)
+
+    def jira_summary_updated = jira_summary.replace("'", "\\'")
+//    jira_query_updated.take(240)  // for safe
+
+    jira_summary_updated =  "\"${jira_summary_updated}\""
+    def jql_str = "summary~${jira_summary_updated} AND status != Done"
     println jql_str
 
     try{
         withEnv(['JIRA_SITE=LOCAL']) {
             try{
-                echo 'b'
                 def searchResults = jiraJqlSearch jql: jql_str
                 def jiraKeys = []
                 def issues = searchResults.data.issues
                 for (i = 0; i <issues.size(); i++) {
                     try{
-                        echo 'a'
                         def issue = jiraGetIssue idOrKey: issues[i].key
                         def bugSummary = issue.data.fields.summary
                         println bugSummary
-                        println jira_query
-                        if (jira_query == bugSummary){
+                        println jira_summary
+                        if (jira_summary == bugSummary){
                             echo 'Duplicate bug found..'
                             jiraKeys<<issues[i].key
                         }
@@ -156,16 +127,47 @@ def getJiraBaseUrl(){
     }
 }
 
-def uploadLogFile(jiraKey, logsPath){
-    try{
+def raiseBug(jiraComponent, fixVersions, issueType, labels, jiraBaseUrl, test) {
+    echo 'Going to raise a Jira ticket'
+    try {
         withEnv(['JIRA_SITE=LOCAL']) {
             try {
-                def attachment = jiraUploadAttachment idOrKey: jiraKey, file: "${logsPath}/hello_python.log"
-            }catch(Exception ex){
-                echo 'Failed to upload log file to jira'
+//                summary = test.@name
+//                message = test.failure.@'message'[0].split('   ')[0]
+//                def jira_query = jiraComponent + ': ' + summary + ': ' + message
+//                jira_query.take(220)
+                summary = getJiraSummary(jiraComponent, test)
+                description = test.failure.text()
+
+                def jiraIssue =
+                        [fields:
+                                 [project    : [id: '16941'],
+                                  summary    : summary,
+                                  description: failedTest.details,
+                                  components : [[name: jiraComponent]],
+                                  fixVersions: [[name: fixVersions]],
+                                  issuetype  : [name: issueType],
+                                  labels     : labels]]
+
+                response = jiraNewIssue issue: jiraIssue
+                def jira = jiraBaseUrl + '/browse/' + response.data.key
+                println jira
+
+                test.failure.@'message' = test.failure.@'message' + ' - ' + jira
+
+            } catch (Exception ex) {
+                echo 'Faild to raise jira ticket'
             }
         }
-    }catch(Exception ex){
-        echo 'Failed to connect to Jira'
+    } catch(Exception ex){
+                echo 'Failed to connect to Jira'
     }
+}
+
+def getJiraSummary(jiraComponent, failedTest){
+    summary = failedTest.@name
+    message = failedTest.failure.@'message'[0].split('   ')[0]
+    def jira_summary = jiraComponent + ': ' + summary + ': ' + message
+    jira_summary= jira_summary.take(220)
+    return  jira_summary
 }
