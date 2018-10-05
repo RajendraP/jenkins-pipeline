@@ -1,4 +1,4 @@
-def call(String jiraprojectName, String jiraComponent, String[] labels=[], String resultsfilePath, String logsPath,
+def call(String jiraprojectName, String jiraComponent, String resultsfilePath, String logsPath, String[] labels=[],
          String issueType='Bug', String fixVersions='pipeline_fixes') {
     stage(name: 'Jira') {
         try {
