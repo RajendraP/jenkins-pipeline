@@ -94,8 +94,8 @@ def raiseBug(String jiraComponent, String fixVersions, String issueType, String[
                         project: [id: '16941'],
                         summary    : summary,
                         description: description,
-                        components : [name: jiraComponent],
-                        fixVersions: [name: fixVersions],
+                        components : [[name: jiraComponent]],
+                        fixVersions: [[name: fixVersions]],
                         issuetype  : [name: issueType],
                         labels     : labels]]
 
