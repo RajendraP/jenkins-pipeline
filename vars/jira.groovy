@@ -13,7 +13,7 @@ def call(String jiraComponent, String resultsfilePath, String[] labels=[],
                             echo 'Jira ticket already exists'
                             bugExists.each {
                                 jiraKey ->
-                                    appendBugId jiraKey, test
+                                    appendBugIdToResultsFile jiraKey, test
                             }
                         } else {
                             echo 'going to raise a Jira ticket'
@@ -39,7 +39,7 @@ def jiraExists(String jiraComponent, failedTest){
 
     jira_summary_updated =  "\"${jira_summary_updated}\""
 
-    def jql_string = "summary~${jira_summary_updated} AND status != Done"
+    jql_string = "summary~${jira_summary_updated} AND status != Done"
 
     try{
         withEnv(['JIRA_SITE=LOCAL']) {
@@ -100,7 +100,7 @@ def raiseBug(String jiraComponent, String fixVersions, String issueType, String[
                         labels     : labels]]
 
                 response = jiraNewIssue issue: jiraIssue
-                appendBugId(response.data.key, test)
+                appendBugIdToResultsFile(response.data.key, test)
             } catch (Exception ex) {
                 println "faild to raise jira ticket: ${ex.message}"
             }
@@ -110,16 +110,15 @@ def raiseBug(String jiraComponent, String fixVersions, String issueType, String[
     }
 }
 
-
 def getJiraSummary(String jiraComponent, failedTest){
     summary = failedTest.@name
     message = failedTest.failure.@'message'[0].split('   ')[0]
     def jira_summary = jiraComponent + ': ' + summary + ': ' + message
-    jira_summary= jira_summary.take(220)
+    jira_summary= jira_summary.take(240)
     return  jira_summary
 }
 
-def appendBugId(jiraKey, test){
+def appendBugIdToResultsFile(jiraKey, test){
     jiraLink = jiraBaseUrl + '/browse/' + jiraKey
     println jiraLink
     test.failure.@'message' = test.failure.@'message'[0] + '\n' + jiraLink
