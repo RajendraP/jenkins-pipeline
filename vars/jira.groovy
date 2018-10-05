@@ -1,4 +1,4 @@
-def call(String jiraprojectName, String jiraComponent, String resultsfilePath, String logsPath, String[] labels=[],
+def call(String jiraComponent, String resultsfilePath, String[] labels=[],
          String issueType='Bug', String fixVersions='pipeline_fixes') {
     stage(name: 'Jira') {
         try {
@@ -9,7 +9,7 @@ def call(String jiraprojectName, String jiraComponent, String resultsfilePath, S
                     xml.testcase.each {
                         test ->
                             if (test.failure) {
-                                echo 'going to call jiraExists'
+                                echo 'checking for existing bug'
                                 def bugExists = []
                                 bugExists = jiraExists jiraComponent, test
                                 if (bugExists) {
