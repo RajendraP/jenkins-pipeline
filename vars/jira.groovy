@@ -143,7 +143,7 @@ def raiseBug(jiraComponent, fixVersions, issueType, labels, jiraBaseUrl, test) {
                         [fields:
                                  [project    : [id: '16941'],
                                   summary    : summary,
-                                  description: failedTest.details,
+                                  description: description,
                                   components : [[name: jiraComponent]],
                                   fixVersions: [[name: fixVersions]],
                                   issuetype  : [name: issueType],
