@@ -34,12 +34,12 @@ def call(String jiraComponent, String resultsFilePath, String[] labels=[],
 }
 
 def jiraExists(String jiraComponent, failedTest){
-    def jira_summary = getJiraSummary(jiraComponent, failedTest)
-    def jira_summary_updated = jira_summary.replace("'", "\\'")
+    def jiraSummary = getJiraSummary(jiraComponent, failedTest)
+    def escapedSingleQuoreJiraSummary = jiraSummary.replace("'", "\\'")
 
-    jira_summary_updated =  "\"${jira_summary_updated}\""
+    escapedSingleQuoreJiraSummary =  "\"${escapedSingleQuoreJiraSummary}\""
 
-    jql_string = "summary~${jira_summary_updated} AND status != Done"
+    jql_string = "summary~${escapedSingleQuoreJiraSummary} AND status != Done"
 
     try{
         withEnv(['JIRA_SITE=LOCAL']) {
@@ -51,7 +51,7 @@ def jiraExists(String jiraComponent, failedTest){
                     try{
                         def issue = jiraGetIssue idOrKey: issues[i].key
                         def bugSummary = issue.data.fields.summary
-                        if (jira_summary == bugSummary){
+                        if (jiraSummary == bugSummary){
                             echo 'Duplicate bug found..'
                             jiraKeys<<issues[i].key
                         }
@@ -113,9 +113,9 @@ def raiseBug(String jiraComponent, String fixVersions, String issueType, String[
 def getJiraSummary(String jiraComponent, failedTest){
     summary = failedTest.@name
     message = failedTest.failure.@'message'[0].split('   ')[0]
-    def jira_summary = jiraComponent + ': ' + summary + ': ' + message
-    jira_summary= jira_summary.take(240)
-    return  jira_summary
+    def jiraSummary = jiraComponent + ': ' + summary + ': ' + message
+    jiraSummary= jiraSummary.take(240)
+    return  jiraSummary
 }
 
 def appendBugIdToResultsFile(jiraKey, test){
