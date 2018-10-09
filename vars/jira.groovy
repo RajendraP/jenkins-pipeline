@@ -1,45 +1,47 @@
 def call(String jiraComponent, String resultsFilePath, String[] labels=[],
          String issueType='Bug', String fixVersions='pipeline_fixes') {
-    stage(name: 'Jira') {
-        jiraBaseUrl = getJiraBaseUrl()
-        try {
-            def testResults = new XmlParser().parse(resultsFilePath)
-            testResults.testcase.each {
-                test ->
-                    if (test.failure) {
-                        echo 'checking if Jira ticket already exist'
-                        bugExists = jiraExists jiraComponent, test
-                        if (bugExists) {
-                            echo 'Jira ticket already exists'
-                            bugExists.each {
-                                jiraKey ->
-                                    appendBugIdToResultsFile jiraKey, test
-                            }
-                        } else {
-                            echo 'going to raise a Jira ticket'
-                            raiseBug jiraComponent, fixVersions, issueType, labels, test
+    jiraBaseUrl = getJiraBaseUrl()
+    try {
+        def testResults = new XmlParser().parse(resultsFilePath)
+        testResults.testcase.each {
+            test ->
+                if (test.failure) {
+                    echo 'checking if Jira ticket already exist'
+                    bugExists = jiraExists jiraComponent, test
+                    if (bugExists) {
+                        echo 'Jira ticket already exists'
+                        bugExists.each {
+                            jiraKey ->
+                                appendBugIdToTestFailureMessage jiraKey, test
                         }
+                    } else {
+                        echo 'going to raise a Jira ticket'
+                        raiseBug jiraComponent, fixVersions, issueType, labels, test
                     }
                 }
-            try {
-                FileWriter writer = new FileWriter(resultsFilePath)
-                new XmlNodePrinter(new PrintWriter(writer)).print(testResults)
-                } catch (Exception ex){
-                println "Failed to update results file: ${ex.message}"
             }
-        }catch (FileNotFoundException ex){
-            println "Unable to read test results files. File may be missing: ${ex.message}"
+        try {
+            FileWriter writer = new FileWriter(resultsFilePath)
+            new XmlNodePrinter(new PrintWriter(writer)).print(testResults)
+            } catch (Exception ex){
+            println "Failed to update results file: ${ex.message}"
+            throw ex
         }
+    }catch (FileNotFoundException ex){
+        println "Unable to read test results files. File may be missing: ${ex.message}"
+        throw ex
     }
 }
 
+
 def jiraExists(String jiraComponent, failedTest){
     def jiraSummary = getJiraSummary(jiraComponent, failedTest)
-    def escapedSingleQuoreJiraSummary = jiraSummary.replace("'", "\\'")
+    def escapedSingleQuoteJiraSummary =
+            jiraSummary.replace("'", "\\'").replace("+", "\\+").replace("-", "\\-")
 
-    escapedSingleQuoreJiraSummary =  "\"${escapedSingleQuoreJiraSummary}\""
+    escapedSingleQuoteJiraSummary =  "\"${escapedSingleQuoteJiraSummary}\""
 
-    jql_string = "summary~${escapedSingleQuoreJiraSummary} AND status != Done"
+    jql_string = "summary~${escapedSingleQuoteJiraSummary} AND status != Done"
 
     try{
         withEnv(['JIRA_SITE=LOCAL']) {
@@ -57,15 +59,18 @@ def jiraExists(String jiraComponent, failedTest){
                         }
                     } catch (Exception ex){
                         println "failed to get details from jiraGetIssue step: ${ex.message}"
+                        throw ex
                     }
                 }
                 return jiraKeys
             } catch (Exception ex){
                 println "failed to get details from JiraJqlSearch step: ${ex.message}"
+                throw ex
             }
         }
     } catch(Exception ex){
         println "failed to connect to Jira: ${ex.message}"
+        throw ex
     }
 }
 
@@ -77,10 +82,12 @@ def getJiraBaseUrl(){
                 return serverInfo.data.baseUrl
             } catch (Exception ex){
                 println "Failed to get Jira Server Info: ${ex.message}"
+                throw ex
             }
         }
     } catch (Exception ex) {
         println "failed to connect to Jira: ${ex.message}"
+        throw ex
     }
 }
 
@@ -100,25 +107,30 @@ def raiseBug(String jiraComponent, String fixVersions, String issueType, String[
                         labels     : labels]]
 
                 response = jiraNewIssue issue: jiraIssue
-                appendBugIdToResultsFile(response.data.key, test)
+                appendBugIdToTestFailureMessage(response.data.key, test)
             } catch (Exception ex) {
                 println "faild to raise jira ticket: ${ex.message}"
+                throw ex
             }
         }
     } catch(Exception ex){
         println "failed to connect to Jira: ${ex.message}"
+        throw ex
     }
 }
 
 def getJiraSummary(String jiraComponent, failedTest){
+    jiraReservedChars = "[\\.\\,\\;\\?\\|\\*\\/\\%\\^\\\\\$\\#\\@\\[\\]]"  // Jira reserved chars, except ',+ and -
     summary = failedTest.@name
-    message = failedTest.failure.@'message'[0].split('   ')[0]
+    message = failedTest.failure.@'message'[0].replaceAll(jiraReservedChars, "")
+    message = message.replaceAll(" +", " ")  // failure.messages, depending upon the assertion it has 2+ spaces
+
     def jiraSummary = jiraComponent + ': ' + summary + ': ' + message
     jiraSummary= jiraSummary.take(240)
     return  jiraSummary
 }
 
-def appendBugIdToResultsFile(jiraKey, test){
+def appendBugIdToTestFailureMessage(jiraKey, test){
     jiraLink = jiraBaseUrl + '/browse/' + jiraKey
     println jiraLink
     test.failure.@'message' = test.failure.@'message'[0] + '\n' + jiraLink
