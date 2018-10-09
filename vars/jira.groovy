@@ -11,11 +11,8 @@ def call(String jiraComponent, String resultsFilePath, String[] labels=[],
                     if (jiraKeysList) {
                         echo 'Jira ticket already exists'
                         appendBugIdToTestFailureMessage jiraKeysList, test
-//
-//                        bugExists.each {
-//                            jiraKey ->
-//                                appendBugIdToTestFailureMessage jiraKey, test
-//                        }
+                        addCommentInExistingBugs jiraKeysList, test
+
                     } else {
                         echo 'going to raise a Jira ticket'
                         raiseBug jiraComponent, fixVersions, issueType, labels, test
@@ -118,4 +115,23 @@ def appendBugIdToTestFailureMessage(jiraKeysList, test){
     }
     println jiraLink
     test.failure.@'message' = test.failure.@'message'[0] + '\n' + jiraLink
+}
+
+def addCommentInExistingBugs(jiraKeysList, test){
+    jiraKeysList.each{
+        jiraKey->
+            try {
+            withEnv(['JIRA_SITE=LOCAL']) {
+                try {
+                    jiraAddComment idOrKey: jiraKey, comment: test.failure.text()
+                } catch (Exception ex) {
+                    println "failed to add comment in Jira: ${ex.message}"
+                    throw ex
+                }
+            }
+            }catch(Exception ex){
+                println "failed to connect to Jira: ${ex.message}"
+                throw ex
+            }
+    }
 }
