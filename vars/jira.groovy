@@ -120,18 +120,46 @@ def appendBugIdToTestFailureMessage(jiraKeysList, test){
 def addCommentInExistingBugs(jiraKeysList, test){
     jiraKeysList.each{
         jiraKey->
-            try {
-            withEnv(['JIRA_SITE=LOCAL']) {
+            newFailure = isNewFailure jiraKey, test
+            if (newFailure){
+                println "found new failure, adding comment"
                 try {
-                    jiraAddComment idOrKey: jiraKey, comment: test.failure.text()
-                } catch (Exception ex) {
-                    println "failed to add comment in Jira: ${ex.message}"
+                    withEnv(['JIRA_SITE=LOCAL']) {
+                        try {
+                            jiraAddComment idOrKey: jiraKey, comment: test.failure.text()
+                        } catch (Exception ex) {
+                            println "failed to add comment in Jira: ${ex.message}"
+                            throw ex
+                        }
+                    }
+                }catch(Exception ex){
+                    println "failed to connect to Jira: ${ex.message}"
                     throw ex
                 }
+            } else{
+                println "No new failure, no new comments is added"
             }
-            }catch(Exception ex){
-                println "failed to connect to Jira: ${ex.message}"
-                throw ex
-            }
+    }
+}
+
+def isNewFailure(jiraKey, test){
+    description = test.failure.@'message'[0]
+    bugDescription = ""
+    try {
+        withEnv(['JIRA_SITE=LOCAL']) {
+            def issue = jiraGetIssue idOrKey: jiraKey
+            bugDescription = issue.data.fields.description
+        }
+    }catch(Exception ex){
+        println "failed to connect to Jira: ${ex.message}"
+        throw ex
+    }
+    bugDescription = bugDescription.split("\n").minus(bugDescription.split("\n")[-1]).join("\n")
+    if (description == bugDescription)
+    {
+        return True
+    }
+    else{
+        return False
     }
 }
