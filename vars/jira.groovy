@@ -157,9 +157,9 @@ def isNewFailure(jiraKey, test){
     bugDescription = bugDescription.split("\n").minus(bugDescription.split("\n")[-1]).join("\n")
     if (description == bugDescription)
     {
-        return True
+        return true
     }
     else{
-        return False
+        return false
     }
 }
