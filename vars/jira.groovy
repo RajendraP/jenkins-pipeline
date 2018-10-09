@@ -126,7 +126,7 @@ def getJiraSummary(String jiraComponent, failedTest){
     message = message.replaceAll(" +", " ")  // failure.messages, depending upon the assertion it has 2+ spaces
 
     def jiraSummary = jiraComponent + ': ' + summary + ': ' + message
-    jiraSummary= jiraSummary.take(240)
+    jiraSummary= jiraSummary.take(254)
     return  jiraSummary
 }
 
