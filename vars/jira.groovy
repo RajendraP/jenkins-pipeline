@@ -144,6 +144,11 @@ def addCommentInExistingBugs(jiraKeysList, test){
 
 def isNewFailure(jiraKey, test){
     description = test.failure.@'message'[0]
+    description = description.split("\n").minus(
+            description.split("\n")[0],
+            description.split("\n")[1],
+            description.split("\n")[2]).join("\n")
+
     bugDescription = ""
     try {
         withEnv(['JIRA_SITE=LOCAL']) {
@@ -154,7 +159,11 @@ def isNewFailure(jiraKey, test){
         println "failed to connect to Jira: ${ex.message}"
         throw ex
     }
-    bugDescription = bugDescription.split("\n").minus(bugDescription.split("\n")[-1]).join("\n")
+    bugDescription = bugDescription.split("\n").minus(
+            bugDescription.split("\n")[0],
+            bugDescription.split("\n")[1],
+            bugDescription.split("\n")[2],
+            bugDescription.split("\n")[-1]).join("\n")
     if (description != bugDescription)
     {
         return true
