@@ -120,12 +120,9 @@ def appendBugIdToTestFailureMessage(jiraKeysList, test){
 def addCommentInExistingBugs(jiraKeysList, test){
     jiraKeysList.each{
         jiraKey->
-            newFailure = isNewFailure jiraKey, test
-            if (newFailure){
-                println "found new failure, adding comment"
-                try {
-                    withEnv(['JIRA_SITE=LOCAL']) {
-                        try {
+            try {
+                withEnv(['JIRA_SITE=LOCAL']) {
+                    try {
                             jiraAddComment idOrKey: jiraKey, comment: test.failure.text()
                         } catch (Exception ex) {
                             println "failed to add comment in Jira: ${ex.message}"
@@ -136,39 +133,37 @@ def addCommentInExistingBugs(jiraKeysList, test){
                     println "failed to connect to Jira: ${ex.message}"
                     throw ex
                 }
-            } else{
-                println "No new failure, no new comments is added"
-            }
     }
 }
 
-def isNewFailure(jiraKey, test){
-    description = test.failure.@'message'[0]
-    description = description.split("\n").minus(
-            description.split("\n")[0],
-            description.split("\n")[1],
-            description.split("\n")[2]).join("\n")
 
-    bugDescription = ""
-    try {
-        withEnv(['JIRA_SITE=LOCAL']) {
-            def issue = jiraGetIssue idOrKey: jiraKey
-            bugDescription = issue.data.fields.description
-        }
-    }catch(Exception ex){
-        println "failed to connect to Jira: ${ex.message}"
-        throw ex
-    }
-    bugDescription = bugDescription.split("\n").minus(
-            bugDescription.split("\n")[0],
-            bugDescription.split("\n")[1],
-            bugDescription.split("\n")[2],
-            bugDescription.split("\n")[-1]).join("\n")
-    if (description != bugDescription)
-    {
-        return true
-    }
-    else{
-        return false
-    }
-}
+//def isNewFailure(jiraKey, test){
+//    description = test.failure.@'message'[0]
+//    description = description.split("\n").minus(
+//            description.split("\n")[0],
+//            description.split("\n")[1],
+//            description.split("\n")[2]).join("\n")
+//
+//    bugDescription = ""
+//    try {
+//        withEnv(['JIRA_SITE=LOCAL']) {
+//            def issue = jiraGetIssue idOrKey: jiraKey
+//            bugDescription = issue.data.fields.description
+//        }
+//    }catch(Exception ex){
+//        println "failed to connect to Jira: ${ex.message}"
+//        throw ex
+//    }
+//    bugDescription = bugDescription.split("\n").minus(
+//            bugDescription.split("\n")[0],
+//            bugDescription.split("\n")[1],
+//            bugDescription.split("\n")[2],
+//            bugDescription.split("\n")[-1]).join("\n")
+//    if (description != bugDescription)
+//    {
+//        return true
+//    }
+//    else{
+//        return false
+//    }
+//}
