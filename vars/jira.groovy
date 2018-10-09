@@ -7,13 +7,15 @@ def call(String jiraComponent, String resultsFilePath, String[] labels=[],
             test ->
                 if (test.failure) {
                     echo 'checking if Jira ticket already exist'
-                    bugExists = jiraExists jiraComponent, test
-                    if (bugExists) {
+                    jiraKeysList = jiraExists jiraComponent, test
+                    if (jiraKeysList) {
                         echo 'Jira ticket already exists'
-                        bugExists.each {
-                            jiraKey ->
-                                appendBugIdToTestFailureMessage jiraKey, test
-                        }
+                        appendBugIdToTestFailureMessage jiraKeysList, test
+//
+//                        bugExists.each {
+//                            jiraKey ->
+//                                appendBugIdToTestFailureMessage jiraKey, test
+//                        }
                     } else {
                         echo 'going to raise a Jira ticket'
                         raiseBug jiraComponent, fixVersions, issueType, labels, test
@@ -35,14 +37,8 @@ def call(String jiraComponent, String resultsFilePath, String[] labels=[],
 
 
 def jiraExists(String jiraComponent, failedTest){
-    def jiraSummary = getJiraSummary(jiraComponent, failedTest)
-    def escapedSingleQuoteJiraSummary =
-            jiraSummary.replace("'", "\\\\'").replace("+", "\\\\+").replace("-", "\\\\-").replace("==", "\\\\==")
-
-    escapedSingleQuoteJiraSummary =  "\"${escapedSingleQuoteJiraSummary}\""
-
-    jql_string = "summary~${escapedSingleQuoteJiraSummary} AND status != Done"
-
+    jiraSummary = getJiraSummary(jiraComponent, failedTest)
+    jql_string = "summary~${jiraSummary} AND status != Done"
     try{
         withEnv(['JIRA_SITE=LOCAL']) {
             try{
@@ -50,17 +46,7 @@ def jiraExists(String jiraComponent, failedTest){
                 jiraKeys = []
                 def issues = searchResults.data.issues
                 for (i = 0; i <issues.size(); i++) {
-                    try{
-                        def issue = jiraGetIssue idOrKey: issues[i].key
-                        def bugSummary = issue.data.fields.summary
-                        if (jiraSummary == bugSummary){
-                            echo 'Duplicate bug found..'
-                            jiraKeys<<issues[i].key
-                        }
-                    } catch (Exception ex){
-                        println "failed to get details from jiraGetIssue step: ${ex.message}"
-                        throw ex
-                    }
+                    jiraKeys<<issues[i].key
                 }
                 return jiraKeys
             } catch (Exception ex){
@@ -120,18 +106,16 @@ def raiseBug(String jiraComponent, String fixVersions, String issueType, String[
 }
 
 def getJiraSummary(String jiraComponent, failedTest){
-    jiraReservedChars = "[\\.\\,\\;\\?\\|\\*\\/\\%\\^\\\\\$\\#\\@\\[\\]]"  // Jira reserved chars, except ',+ and -
     summary = failedTest.@name
-    message = failedTest.failure.@'message'[0].replaceAll(jiraReservedChars, "")
-    message = message.replaceAll(" +", " ")  // failure.messages, depending upon the assertion it has 2+ spaces
-
-    def jiraSummary = jiraComponent + ': ' + summary + ': ' + message
-    jiraSummary= jiraSummary.take(254)
-    return  jiraSummary
+    summary = jiraComponent + ":" + summary
+    return summary.take(254)
 }
 
-def appendBugIdToTestFailureMessage(jiraKey, test){
-    jiraLink = jiraBaseUrl + '/browse/' + jiraKey
+def appendBugIdToTestFailureMessage(jiraKeysList, test){
+    String jiraLink = ""
+    jiraKeysList.each{
+        jiraKey-> jiraLink += jiraBaseUrl + '/browse/' + jiraKey + '\n'
+    }
     println jiraLink
     test.failure.@'message' = test.failure.@'message'[0] + '\n' + jiraLink
 }
