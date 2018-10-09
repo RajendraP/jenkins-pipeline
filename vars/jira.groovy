@@ -37,7 +37,7 @@ def call(String jiraComponent, String resultsFilePath, String[] labels=[],
 def jiraExists(String jiraComponent, failedTest){
     def jiraSummary = getJiraSummary(jiraComponent, failedTest)
     def escapedSingleQuoteJiraSummary =
-            jiraSummary.replace("'", "\\'").replace("+", "\\+").replace("-", "\\-")
+            jiraSummary.replace("'", "\\\\'").replace("+", "\\\\+").replace("-", "\\\\-").replace("==", "\\\\==")
 
     escapedSingleQuoteJiraSummary =  "\"${escapedSingleQuoteJiraSummary}\""
 
