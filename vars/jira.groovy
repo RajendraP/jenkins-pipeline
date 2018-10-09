@@ -90,7 +90,7 @@ def raiseBug(String jiraComponent, String fixVersions, String issueType, String[
                         labels     : labels]]
 
                 response = jiraNewIssue issue: jiraIssue
-                appendBugIdToTestFailureMessage(response.data.key, test)
+                appendBugIdToTestFailureMessage([response.data.key], test)
             } catch (Exception ex) {
                 println "faild to raise jira ticket: ${ex.message}"
                 throw ex
