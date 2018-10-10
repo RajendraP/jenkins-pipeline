@@ -42,9 +42,7 @@ def isBugAlreadyExists(String jiraComponent, failedTest){
                 def searchResults = jiraJqlSearch jql: jql_string
                 jiraKeys = []
                 def issues = searchResults.data.issues
-                for (i = 0; i < issues.size(); i++) {
-                    jiraKeys << issues[i].key
-                }
+                jiraKeys = issues.collect {issue -> return issue.key}
                 return jiraKeys
             } catch (Exception ex){
                 println "failed to get details from JiraJqlSearch step: ${ex.message}"
