@@ -1,13 +1,13 @@
 def call(String jiraComponent, String resultsFilePath, String[] labels=[],
-         String issueType='Bug', String fixVersions='pipeline_fixes') {
+         String[] fixVersions=[], String projectId='16941', String issueType='Bug') {
     jiraBaseUrl = getJiraBaseUrl()
     try {
         def testResults = new XmlParser().parse(resultsFilePath)
         testResults.testcase.each {
             test ->
                 if (test.failure) {
-                    echo 'checking if Jira ticket already exist'
-                    jiraKeysList = jiraExists jiraComponent, test
+                    echo 'checking if Jira ticket already exists'
+                    jiraKeysList = isBugAlreadyExists jiraComponent, test
                     if (jiraKeysList) {
                         echo 'Jira ticket already exists'
                         appendBugIdToTestFailureMessage jiraKeysList, test
@@ -15,25 +15,25 @@ def call(String jiraComponent, String resultsFilePath, String[] labels=[],
 
                     } else {
                         echo 'going to raise a Jira ticket'
-                        raiseBug jiraComponent, fixVersions, issueType, labels, test
+                        raiseBug projectId, jiraComponent, issueType, fixVersions, labels, test
                     }
                 }
             }
         try {
             FileWriter writer = new FileWriter(resultsFilePath)
             new XmlNodePrinter(new PrintWriter(writer)).print(testResults)
-            } catch (Exception ex){
+        } catch (Exception ex){
             println "Failed to update results file: ${ex.message}"
             throw ex
         }
-    }catch (FileNotFoundException ex){
+    } catch (FileNotFoundException ex){
         println "Unable to read test results files. File may be missing: ${ex.message}"
         throw ex
     }
 }
 
 
-def jiraExists(String jiraComponent, failedTest){
+def isBugAlreadyExists(String jiraComponent, failedTest){
     jiraSummary = getJiraSummary(jiraComponent, failedTest)
     jql_string = "summary~${jiraSummary} AND status != Done"
     try{
@@ -42,8 +42,8 @@ def jiraExists(String jiraComponent, failedTest){
                 def searchResults = jiraJqlSearch jql: jql_string
                 jiraKeys = []
                 def issues = searchResults.data.issues
-                for (i = 0; i <issues.size(); i++) {
-                    jiraKeys<<issues[i].key
+                for (i = 0; i < issues.size(); i++) {
+                    jiraKeys << issues[i].key
                 }
                 return jiraKeys
             } catch (Exception ex){
@@ -74,14 +74,18 @@ def getJiraBaseUrl(){
     }
 }
 
-def raiseBug(String jiraComponent, String fixVersions, String issueType, String[] labels=[], test) {
+def raiseBug(String projectId, String jiraComponent, String issueType, String[] fixVersions, String[] labels, test) {
     try {
         withEnv(['JIRA_SITE=LOCAL']) {
             try {
+                fixVersion = 'pipeline_fixes'
+                fixVersions = fixVersions.plus(fixVersion)
+                defaultLabel = 'PipelineBug'
+                labels = labels.plus(defaultLabel)
                 summary = getJiraSummary(jiraComponent, test)
                 description = test.failure.text()
                 jiraIssue = [fields: [
-                        project: [id: '16941'],
+                        project: [id: projectId],
                         summary    : summary,
                         description: description,
                         components : [[name: jiraComponent]],
@@ -103,8 +107,7 @@ def raiseBug(String jiraComponent, String fixVersions, String issueType, String[
 }
 
 def getJiraSummary(String jiraComponent, failedTest){
-    summary = failedTest.@name
-    summary = jiraComponent + ":" + summary
+    summary = jiraComponent + ":" + failedTest.@name
     return summary.take(254)
 }
 
@@ -123,47 +126,15 @@ def addCommentInExistingBugs(jiraKeysList, test){
             try {
                 withEnv(['JIRA_SITE=LOCAL']) {
                     try {
-                            jiraAddComment idOrKey: jiraKey, comment: test.failure.text()
-                        } catch (Exception ex) {
-                            println "failed to add comment in Jira: ${ex.message}"
-                            throw ex
-                        }
+                        jiraAddComment idOrKey: jiraKey, comment: test.failure.text()
+                    } catch (Exception ex){
+                        println "failed to add comment in Jira: ${ex.message}"
+                        throw ex
                     }
-                }catch(Exception ex){
-                    println "failed to connect to Jira: ${ex.message}"
-                    throw ex
                 }
+            } catch(Exception ex){
+                println "failed to connect to Jira: ${ex.message}"
+                throw ex
+            }
     }
 }
-
-
-//def isNewFailure(jiraKey, test){
-//    description = test.failure.@'message'[0]
-//    description = description.split("\n").minus(
-//            description.split("\n")[0],
-//            description.split("\n")[1],
-//            description.split("\n")[2]).join("\n")
-//
-//    bugDescription = ""
-//    try {
-//        withEnv(['JIRA_SITE=LOCAL']) {
-//            def issue = jiraGetIssue idOrKey: jiraKey
-//            bugDescription = issue.data.fields.description
-//        }
-//    }catch(Exception ex){
-//        println "failed to connect to Jira: ${ex.message}"
-//        throw ex
-//    }
-//    bugDescription = bugDescription.split("\n").minus(
-//            bugDescription.split("\n")[0],
-//            bugDescription.split("\n")[1],
-//            bugDescription.split("\n")[2],
-//            bugDescription.split("\n")[-1]).join("\n")
-//    if (description != bugDescription)
-//    {
-//        return true
-//    }
-//    else{
-//        return false
-//    }
-//}
