@@ -1,5 +1,5 @@
 def call(String jiraComponent, String resultsFilePath, String[] labels=[],
-         String[] fixVersions=[], String projectId='16941', String issueType='Bug') {
+         String fixVersions='pipeline_fixes', String projectId='16941', String issueType='Bug') {
     jiraBaseUrl = getJiraBaseUrl()
     try {
         def testResults = new XmlParser().parse(resultsFilePath)
@@ -74,12 +74,10 @@ def getJiraBaseUrl(){
     }
 }
 
-def raiseBug(String projectId, String jiraComponent, String issueType, String[] fixVersions, String[] labels, test) {
+def raiseBug(String projectId, String jiraComponent, String issueType, String fixVersions, String[] labels, test) {
     try {
         withEnv(['JIRA_SITE=LOCAL']) {
             try {
-                fixVersion = 'pipeline_fixes'
-                fixVersions = fixVersions.plus(fixVersion)
                 defaultLabel = 'PipelineBug'
                 labels = labels.plus(defaultLabel)
                 summary = getJiraSummary(jiraComponent, test)
