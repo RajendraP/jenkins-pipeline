@@ -1,6 +1,6 @@
 import groovy.xml.XmlUtil
 
-def call(String jiraComponent, String resultsFilePath, def labels=[],
+def call(String jiraComponent, String resultsFilePath, String[] labels=[],
          String fixVersions='pipeline_fixes', String projectId='16941', String issueType='Bug') {
     jiraBaseUrl = getJiraBaseUrl()
     try {
