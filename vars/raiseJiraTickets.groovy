@@ -78,7 +78,7 @@ def getJiraBaseUrl() {
     }
 }
 
-def raiseBug(String projectId, String jiraComponent, String issueType, String fixVersions, def labels, String testName, String testFailureMessage) {
+def raiseBug(String projectId, String jiraComponent, String issueType, String fixVersions, String[] labels, String testName, String testFailureMessage) {
     try {
         withEnv(['JIRA_SITE=jira.corporate.local']) {
             try {
