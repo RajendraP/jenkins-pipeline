@@ -82,8 +82,8 @@ def raiseBug(String projectId, String jiraComponent, String issueType, String fi
     try {
         withEnv(['JIRA_SITE=jira.corporate.local']) {
             try {
-                defaultLabel = 'PipelineBug'
-                labels.add(defaultLabel)
+                defaultLabel = ['PipelineBug']
+                labels.plus(defaultLabel)
                 summary = getJiraSummary(jiraComponent, testName)
                 description = test.failure.text()
                 jiraIssue = [fields: [
