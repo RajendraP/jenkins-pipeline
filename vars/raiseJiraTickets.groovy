@@ -85,7 +85,7 @@ def raiseBug(String projectId, String jiraComponent, String issueType, String fi
                 defaultLabel = ['PipelineBug']
                 labels.plus(defaultLabel)
                 summary = getJiraSummary(jiraComponent, testName)
-                description = test.failure.text()
+                //description = test.failure.text()
                 jiraIssue = [fields: [
                         project: [id: projectId],
                         summary    : summary,
